@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>TypedRpc</id>
+    <version>0.1.0</version>
+    <title>TypedRpc</title>
+    <authors>Rodris</authors>
+    <owners>Rodris</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://github.com/Rodris/TypedRpc</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>JsonRpc implementation in .Net OWIN and TypeScript</description>
+    <tags>Json Rpc .Net OWIN TypeScript</tags>
+    <dependencies>
+      <dependency id="Microsoft.Owin" version="3.0.1" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.1" />
+      <dependency id="Newtonsoft.Json" version="9.0.1" />
+      <dependency id="Owin" version="1.0" />
+    </dependencies>
+    <files>
+      <file src="bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
+      <file src="RpcClient.tt" target="Scripts\RpcClient.tt" />
+    </files>
+  </metadata>
+</package>
