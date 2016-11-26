@@ -17,9 +17,9 @@
       <dependency id="Newtonsoft.Json" version="9.0.1" />
       <dependency id="Owin" version="1.0" />
     </dependencies>
-    <files>
-      <file src="bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
-      <file src="RpcClient.tt" target="Scripts\RpcClient.tt" />
-    </files>
   </metadata>
+  <files>
+    <file src="bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
+    <file src="RpcClient.tt" target="content\Scripts\RpcClient.tt" />
+  </files>
 </package>
