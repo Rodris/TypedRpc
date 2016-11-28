@@ -8,10 +8,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace RpcServer
+namespace TypedRpc
 {
     // Server main class.
-    public class RpcServer : OwinMiddleware
+    public class TypedRpcServer : OwinMiddleware
     {
         // Serializer
         private JsonSerializer Serializer = new JsonSerializer();
@@ -19,14 +19,14 @@ namespace RpcServer
         // Maps RpcServer in OWIN.
         public static void Map(IAppBuilder app)
         {
-            app.Map("/rpc", appBuilder => appBuilder.Use<RpcServer>(new object[0]));
+            app.Map("/rpc", appBuilder => appBuilder.Use<TypedRpcServer>(new object[0]));
         }
 
         // Available handlers.
         private List<Object> Handlers = new List<Object>();
 
         // Constructor
-        public RpcServer(OwinMiddleware next)
+        public TypedRpcServer(OwinMiddleware next)
             : base(next)
         {
             // Initializations
@@ -41,7 +41,7 @@ namespace RpcServer
             Type handlerType;
             ConstructorInfo constructor;
 
-            handlerType = typeof(RpcServerHandler);
+            handlerType = typeof(TypedRpcHandler);
             types = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
                 .Where(p => !p.IsAbstract && Attribute.IsDefined(p, handlerType))

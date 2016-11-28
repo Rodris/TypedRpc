@@ -15,7 +15,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Xml.Linq" #>
 
-namespace RpcServerNet {
+namespace TypedRpc {
 
 	function setErrorMessage(error) {
 		if (!error.message) {
@@ -31,6 +31,32 @@ namespace RpcServerNet {
 
 		return error;
 	}
+	
+	class MethodCall {
+		private doneCallback = null;
+        private failCallback = null;
+
+        Done(callback): MethodCall {
+            this.doneCallback = callback;
+			return this;
+		}
+
+        Fail(callback): MethodCall {
+            this.failCallback = callback;
+			return this;
+		}
+
+		Resolve(jResponse) {
+			if (this.doneCallback) this.doneCallback(jResponse.result, jResponse);
+		}
+
+		Reject(jResponse = null) {
+			if (this.failCallback) {
+				if (jResponse) this.failCallback(setErrorMessage(jResponse.error), jResponse);
+				else this.failCallback(setErrorMessage({}), null);
+			}
+		}
+	}
 
 	var nextId = 1;
 
@@ -39,7 +65,7 @@ namespace RpcServerNet {
 		for (var i in args) parameters.push(args[i]);
 		var jsonRequest = JSON.stringify({ method: method, params: parameters, id: nextId });
 		nextId++;
-		var deferred = $.Deferred<T>();
+		var methodCall = new MethodCall();
 
 		var request = new XMLHttpRequest();
         request.open('POST', '/rpc', true);
@@ -48,23 +74,23 @@ namespace RpcServerNet {
             if (request.status >= 200 && request.status < 400) {
                 var jResponse = JSON.parse(request.responseText);
 				if (jResponse.error) {
-					deferred.reject(setErrorMessage(jResponse.error));
+					methodCall.Reject(jResponse);
 				} else {
-					deferred.resolve(jResponse.result, jResponse);
+					methodCall.Resolve(jResponse);
 				}
                 
             } else {
-                deferred.reject(setErrorMessage({}));
+                methodCall.Reject();
             }
         };
 
         request.onerror = function () {
-            deferred.reject(setErrorMessage({}));
+            methodCall.Reject();
         };
 
         request.send(jsonRequest);
 
-		return deferred;
+		return methodCall;
 	}
 
 <#
@@ -203,7 +229,7 @@ namespace RpcServerNet {
 	public bool IsServer(EnvDTE.CodeClass clazz)
 	{
 		foreach (EnvDTE.CodeClass subclazz in clazz.Bases) {
-			foreach (EnvDTE.CodeAttribute attr in clazz.Attributes) if (attr.FullName == "RpcServer.RpcServerHandler") return true;
+			foreach (EnvDTE.CodeAttribute attr in clazz.Attributes) if (attr.FullName == "TypedRpc.TypedRpcHandler") return true;
 			if (IsServer(subclazz)) return true;
 		}
 
@@ -272,7 +298,7 @@ namespace RpcServerNet {
 
 		parameters = BuildParameters(method);
 
-		WriteLine(method.Name + "(" + parameters + "): JQueryPromise<" + GetName(method.Type) + "> {");
+		WriteLine(method.Name + "(" + parameters + "): MethodCall {");
 		PushIndent("    ");
 		BuildMethodBody(clazz, method);
 		PopIndent();

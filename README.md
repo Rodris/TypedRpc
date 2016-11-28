@@ -4,15 +4,21 @@ TypedRpc is a [JsonRpc](http://www.jsonrpc.org/specification) implementation in 
 
 ## Installation
 
+To install from NuGet, run the following command in the Package Manager Console:
+
+```
+Install-Package TypedRpc
+```
+
 ## Server
 
-To create a class to expose methods and handle client requests, add the `RpcServerHandler` attribute to it. All its public methods will be available at the client side.
+To make a class expose its methods for client requests, add the `TypedRpcHandler` attribute to it. All its public methods will be available at the client side.
 
 You may use default values for parameters. They will be optional at the client side.
 
 ### Example
 ```C#
-[RpcServerHandler]
+[TypedRpcHandler]
 public class RpcServerExample
 {
   public String Echo(String name = "Guest")
@@ -24,18 +30,22 @@ public class RpcServerExample
 
 ## Client
 
-Add a reference to the `Scripts/RpcClient.ts` file to have access to server handlers and its methods.
+Add a reference to the `Scripts/TypedRpc.ts` file to have access to server handlers and its methods.
 
 To make a method call, create a new instance of the desired class.
+
+If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
 
 ### Example
 
 ```TypeScript
-/// <reference path="Scripts/RpcClient.ts" />
+/// <reference path="Scripts/TypedRpc.ts" />
 
-let rpc: RpcServer.RpcServerExample = new RpcServerNet.RpcServerExample();
-rpc.Echo("New User").done(function(data, jsonResponse) {
+let rpc: TypedRpc.RpcServerExample = new TypedRpc.RpcServerExample();
+rpc.Echo("New User").Done(function(data, jsonResponse) {
   console.log(data);
+}).Fail(function(error, jsonResponse) {
+  console.log(error);
 });
 ```
 
