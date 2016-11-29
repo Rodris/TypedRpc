@@ -1,6 +1,6 @@
 # TypedRpc
 
-TypedRpc is a [JsonRpc](http://www.jsonrpc.org/specification) implementation in [OWIN](http://owin.org/) that automatically generates [TypeScript](https://www.typescriptlang.org/) files to be used by the client.
+TypedRpc is a [JsonRpc](http://www.jsonrpc.org/specification) implementation in [OWIN](http://owin.org/). It automatically generates [TypeScript](https://www.typescriptlang.org/) files to be used by the client.
 
 ## Installation
 
