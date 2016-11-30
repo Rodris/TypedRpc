@@ -12,7 +12,7 @@ namespace TypedRpc
     {
         public void Configuration(IAppBuilder app)
         {
-            TypedRpcRpcServer.Map(app);
+            TypedRpcServer.Map(app);
         }
     }
 }
