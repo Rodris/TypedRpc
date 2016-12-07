@@ -81,11 +81,11 @@
   <ItemGroup>
     <Content Include="NuGet\TypedRpc.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TypedRpc1.ts</LastGenOutput>
+      <LastGenOutput>TypedRpc.ts</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="NuGet\TypedRpc1.ts">
+    <TypeScriptCompile Include="NuGet\TypedRpc.ts">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TypedRpc.tt</DependentUpon>
