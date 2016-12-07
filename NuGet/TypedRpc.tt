@@ -2,7 +2,6 @@
 <#@ output extension=".ts" #>
 <#@ assembly name="EnvDTE" #>
 <#@ assembly name="EnvDTE80" #>
-<#@ assembly name="$(TargetPath)" #>
 <#@ assembly name="System.Core" #>
 <#@ assembly name="System.Web" #>
 <#@ assembly name="System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" #>

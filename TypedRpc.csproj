@@ -63,11 +63,13 @@
     <Compile Include="JsonError.cs" />
     <Compile Include="JsonResponse.cs" />
     <Compile Include="JsonRequest.cs" />
-    <Compile Include="NuGet\TypedRpcStartup.cs" />
+    <None Include="NuGet\TypedRpcStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypedRpcHandler.cs" />
     <Compile Include="TypedRpcServer.cs" />
-    <None Include="NuGet\TypedRpc.nuspec" />
+    <None Include="NuGet\TypedRpc.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

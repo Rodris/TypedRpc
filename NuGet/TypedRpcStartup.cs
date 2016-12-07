@@ -8,6 +8,9 @@ using System.Web;
 [assembly: OwinStartup(typeof(TypedRpc.TypedRpcStartup))]
 namespace TypedRpc
 {
+    /**
+     * Class to initialize OWIN.
+     */
     public class TypedRpcStartup
     {
         public void Configuration(IAppBuilder app)

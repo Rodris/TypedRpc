@@ -18,7 +18,7 @@ You may use default values for parameters. They will be optional at the client s
 
 ### Example
 ```C#
-[TypedRpcHandler]
+[TypedRpc.TypedRpcHandler]
 public class RpcServerExample
 {
   public String Echo(String name = "Guest")
