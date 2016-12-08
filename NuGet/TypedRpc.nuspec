@@ -19,7 +19,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\..\bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
+    <file src="..\bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
     <file src="TypedRpc.tt" target="content\Scripts\TypedRpc.tt" />
     <file src="TypedRpcStartup.cs" target="content\TypedRpcStartup.cs" />
   </files>
