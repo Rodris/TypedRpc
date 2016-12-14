@@ -35,21 +35,21 @@ namespace TypedRpc {
 		private doneCallback = null;
         private failCallback = null;
 
-        Done(callback): MethodCall {
+        done(callback): MethodCall {
             this.doneCallback = callback;
 			return this;
 		}
 
-        Fail(callback): MethodCall {
+        fail(callback): MethodCall {
             this.failCallback = callback;
 			return this;
 		}
 
-		Resolve(jResponse) {
+		resolve(jResponse) {
 			if (this.doneCallback) this.doneCallback(jResponse.result, jResponse);
 		}
 
-		Reject(jResponse = null) {
+		reject(jResponse = null) {
 			if (this.failCallback) {
 				if (jResponse) this.failCallback(setErrorMessage(jResponse.error), jResponse);
 				else this.failCallback(setErrorMessage({}), null);
@@ -73,18 +73,18 @@ namespace TypedRpc {
             if (request.status >= 200 && request.status < 400) {
                 var jResponse = JSON.parse(request.responseText);
 				if (jResponse.error) {
-					methodCall.Reject(jResponse);
+					methodCall.reject(jResponse);
 				} else {
-					methodCall.Resolve(jResponse);
+					methodCall.resolve(jResponse);
 				}
                 
             } else {
-                methodCall.Reject();
+                methodCall.reject();
             }
         };
 
         request.onerror = function () {
-            methodCall.Reject();
+            methodCall.reject();
         };
 
         request.send(jsonRequest);
@@ -115,7 +115,11 @@ namespace TypedRpc {
 
 	// Adds an interface to build.
 	void AddInterface(String codeTypeName) {
+		// Ignores System interfaces.
 		if (codeTypeName == null || codeTypeName.StartsWith("System")) return;
+
+		// Ignores IOwinContext interface.
+		if (codeTypeName.Equals("Microsoft.Owin.IOwinContext")) return;
 
 		EnvDTE.CodeType codeType = CurrentProject.CodeModel.CodeTypeFromFullName(codeTypeName);
 		if (codeType == null) return;
@@ -258,7 +262,7 @@ namespace TypedRpc {
 		}
 	}
 
-	// Builds serve class.
+	// Builds server class.
 	public void BuildServers(EnvDTE.CodeNamespace container) {
 		// Builds servers.
 		foreach(EnvDTE.CodeElement element in container.Members)
@@ -322,6 +326,9 @@ namespace TypedRpc {
 		String optional;
 		
 		foreach (EnvDTE80.CodeParameter2 parm in method.Parameters) {
+			// Ignores IOwinContext parameters.
+			if (GetName(parm.Type.CodeType) == "IOwinContext") continue;
+
 			optional = (parm.ParameterKind == EnvDTE80.vsCMParameterKind.vsCMParameterKindOptional) ? "?" : String.Empty;
 			parms.Add(parm.Name + optional + ": " + GetName(parm.Type.CodeType));
 		}

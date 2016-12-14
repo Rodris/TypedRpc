@@ -12,46 +12,78 @@ Install-Package TypedRpc
 
 ## Server
 
-To make a class expose its methods for client requests, add the `TypedRpcHandler` attribute to it. All its public methods will be available at the client side.
+To make a class expose its methods for client requests, add the `TypedRpcHandler` attribute to it. All its public methods will be available in TypeScript.
 
 You may use default values for parameters. They will be optional at the client side.
 
+If you need the IOwinContext in your method, add it as a parameter. The generated TypeScript class will ignore it.
+
 ### Example
+
+Create a `RpcServerExample.cs` file to your project.
+
 ```C#
 [TypedRpc.TypedRpcHandler]
 public class RpcServerExample
 {
-  public String Echo(String name = "Guest")
+  public String Greet(String name = "Guest")
   {
     return "Hello, " + name + "!";
+  }
+
+  public String GreetMe(Microsoft.Owin.IOwinContext context)
+  {
+  	  return "Hello, " + context.Authentication.User.Identity.Name + "!";
   }
 }
 ```
 
 ## Client
 
-Add a reference to the `Scripts/TypedRpc.ts` file to have access to server handlers and its methods.
+In your TypeCript files, add a reference to the `Scripts/TypedRpc.ts` file to have access to server handlers and its methods.
 
-To make a method call, create a new instance of the desired class.
+To make a method call, create a new instance of the desired handler class.
 
 If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
 
 ### Example
 
+Create an `index.ts` file to your project and add a reference to the `TypedRpc.ts` file.
+
 ```TypeScript
 /// <reference path="Scripts/TypedRpc.ts" />
 
 let rpc: TypedRpc.RpcServerExample = new TypedRpc.RpcServerExample();
-rpc.Echo("New User").Done(function(data, jsonResponse) {
+
+rpc.Greet("New User").done(function(data, jsonResponse) {
   console.log(data);
-}).Fail(function(error, jsonResponse) {
+}).fail(function(error, jsonResponse) {
+  console.log(error);
+});
+
+rpc.GreetMe().done(function(data, jsonResponse) {
+  console.log(data);
+}).fail(function(error, jsonResponse) {
   console.log(error);
 });
 ```
 
-## Contributions
+Create an `index.html` file to your project and import the `TypedRpc.js` and `index.js` file to it.
 
-Contributions are greatly appreciated.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TypedRpc Example</title>
+	<meta charset="utf-8" />
+    <script src="Scripts/TypedRpc.js"></script>
+    <script src="index.js"></script>
+</head>
+<body>
+
+</body>
+</html>
+```
 
 ## License
 

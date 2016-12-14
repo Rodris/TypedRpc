@@ -130,7 +130,7 @@ namespace TypedRpc
                     else
                     {
                         // Extracts parameters.
-                        if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(methodInfo.GetParameters(), jRequest.Params as JArray);
+                        if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(context, methodInfo.GetParameters(), jRequest.Params as JArray);
 
                         // Validates para meters.
                         if (parameters == null)
@@ -175,20 +175,43 @@ namespace TypedRpc
         }
         
         // Extracts parameters as array.
-        private Object[] ExtractParametersAsArray(ParameterInfo[] paramsInfo, JArray paramsReceived)
+        private Object[] ExtractParametersAsArray(IOwinContext context, ParameterInfo[] paramsInfo, JArray paramsReceived)
         {
             // Declarations
             Object[] parameters;
+            int paramCount;
+            int paramReceivedCount;
 
             // Initializations
             parameters = new Object[paramsInfo.Length];
+            paramCount = 0;
+            paramReceivedCount = 0;
 
             // Extracts all parameters.
-            for (int i = 0; i < paramsInfo.Length; i++)
+            foreach (ParameterInfo paramInfo in paramsInfo)
             {
-                // Checks if parameter is set.
-                if (i < paramsReceived.Count) parameters[i] = paramsReceived[i].ToObject(paramsInfo[i].ParameterType);
-                else if (paramsInfo[i].IsOptional) parameters[i] = Type.Missing;
+                // Checks if param is the context.
+                if (paramInfo.ParameterType == typeof(IOwinContext))
+                {
+                    parameters[paramCount] = context;
+                    paramCount++;
+                }
+
+                // Checks if parameter is available.
+                else if (paramReceivedCount < paramsReceived.Count)
+                {
+                    parameters[paramCount] = paramsReceived[paramReceivedCount].ToObject(paramInfo.ParameterType);
+                    paramCount++;
+                    paramReceivedCount++;
+                }
+
+                // Checks if parameter is optional.
+                else if (paramInfo.IsOptional)
+                {
+                    parameters[paramCount] = Type.Missing;
+                    paramCount++;
+                }
+
                 else
                 {
                     // Wrong number of parameters.
