@@ -61,6 +61,99 @@ namespace TypedRpc
             }
         }
 
+        // Handles requests.
+        public override async Task Invoke(IOwinContext context)
+        {
+            // Declarations
+            JsonResponse jResponse;
+
+            // Invokes method.
+            jResponse = await InvokeMethod(context);
+            
+            // Sends response.
+            context.Response.ContentType = "application/json; charset=utf-8";
+            Serializer.SerializeJsonResponse(context.Response.Body, jResponse);
+        }
+
+        // Handles requests.
+        public async Task<JsonResponse> InvokeMethod(IOwinContext context)
+        {
+            // Declarations
+            JsonRequest jRequest;
+            object handler;
+            MethodInfo methodInfo;
+            object[] parameters;
+            object result;
+
+            // Initializations
+            jRequest = null;
+            handler = null;
+            methodInfo = null;
+            parameters = null;
+
+            // Extracts request.
+            jRequest = Serializer.DeserializeJsonRequest(context.Request.Body);
+
+            // Validates message.
+            if (jRequest == null) return MountError(null, JsonError.ERROR_PARSE);
+
+            // Validates request.
+            if (jRequest.Method == null) return MountError(jRequest.Id, JsonError.ERROR_INVALID_REQUEST);
+            
+            // Searches and validates handle.
+            GetMethod(jRequest.Method, out handler, out methodInfo);
+
+            // Validates handler and method.
+            if (handler == null || methodInfo == null) return MountError(jRequest.Id, JsonError.ERROR_METHOD_NOT_FOUND);
+            
+            // Extracts parameters.
+            if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(context, methodInfo.GetParameters(), jRequest.Params as JArray);
+
+            // Validates para meters.
+            if (parameters == null) return MountError(jRequest.Id, JsonError.ERROR_INVALID_PARAMS);
+            
+            try
+            {
+                // Invokes method.
+                result = methodInfo.Invoke(handler, parameters);
+
+                // Checks if result is async.
+                if (result is Task)
+                {
+                    // Awaits method.
+                    await (Task)result;
+
+                    // Retrieves result value.
+                    result = result.GetType().GetProperty("Result").GetValue(result);
+
+                    // Checks if it is void.
+                    if (result.ToString() == "System.Threading.Tasks.VoidTaskResult") result = null;
+                }
+
+                // Mounts method response.
+                return new JsonResponse()
+                {
+                    Id = jRequest.Id,
+                    Result = result
+                };
+            }
+            catch (Exception)
+            {
+                // Handles error.
+                return MountError(jRequest.Id, JsonError.ERROR_INTERNAL);
+            }
+        }
+
+        // Creates an error response.
+        private JsonResponse MountError(Object id, int errorCode)
+        {
+            return new JsonResponse()
+            {
+                Id = id,
+                Error = errorCode
+            };
+        }
+
         // Retrieves a method and its handler.
         private void GetMethod(String fullMethodName, out Object handler, out MethodInfo methodInfo)
         {
@@ -82,98 +175,6 @@ namespace TypedRpc
             }
         }
 
-        // Handles requests.
-        public override Task Invoke(IOwinContext context)
-        {
-            // Runs task.
-            return Task.Run(() =>
-            {
-                // Declarations
-                JsonRequest jRequest;
-                JsonResponse jResponse;
-                Object handler;
-                MethodInfo methodInfo;
-                Object[] parameters;
-
-                // Initializations
-                jRequest = null;
-                jResponse = null;
-                handler = null;
-                methodInfo = null;
-                parameters = null;
-
-                // Extracts request.
-                jRequest = Serializer.DeserializeJsonRequest(context.Request.Body);
-
-                // Validates request.
-                if (jRequest == null)
-                {
-                    // Parse error.
-                    jResponse = MountError(null, JsonError.ERROR_PARSE);
-                }
-                else if (jRequest.Method == null)
-                {
-                    // Invalid request.
-                    jResponse = MountError(jRequest.Id, JsonError.ERROR_INVALID_REQUEST);
-                }
-                else
-                {
-                    // Searches and validates handle.
-                    GetMethod(jRequest.Method, out handler, out methodInfo);
-
-                    // Validates handler and method.
-                    if (handler == null || methodInfo == null)
-                    {
-                        // Method not found.
-                        jResponse = MountError(jRequest.Id, JsonError.ERROR_METHOD_NOT_FOUND);
-                    }
-                    else
-                    {
-                        // Extracts parameters.
-                        if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(context, methodInfo.GetParameters(), jRequest.Params as JArray);
-
-                        // Validates para meters.
-                        if (parameters == null)
-                        {
-                            // Invalid params.
-                            jResponse = MountError(jRequest.Id, JsonError.ERROR_INVALID_PARAMS);
-                        }
-                        else
-                        {
-                            try
-                            {
-                                // Invokes method.
-                                jResponse = new JsonResponse()
-                                {
-                                    Id = jRequest.Id,
-                                    Result = methodInfo.Invoke(handler, parameters)
-                                };
-                            }
-                            catch (Exception)
-                            {
-                                // Handles error.
-                                jResponse = MountError(jRequest.Id, JsonError.ERROR_INTERNAL);
-                            }
-                        }
-                    }
-                }
-
-                // Sends response.
-                context.Response.ContentType = "application/json; charset=utf-8";
-                Serializer.SerializeJsonResponse(context.Response.Body, jResponse);
-            });
-        }
-
-        // Creates an error response.
-        private JsonResponse MountError(Object id, int errorCode)
-        {
-            return new JsonResponse()
-            {
-                Id = id,
-                Error = errorCode
-            };
-        }
-        
         // Extracts parameters as array.
         private Object[] ExtractParametersAsArray(IOwinContext context, ParameterInfo[] paramsInfo, JArray paramsReceived)
         {

@@ -130,17 +130,20 @@ namespace TypedRpc {
 	}
 
 	// Returns the name of a type.
-	public String GetName(EnvDTE.CodeTypeRef codeTypeRef) {
+	public String GetNameCodeTypeRef(EnvDTE.CodeTypeRef codeTypeRef) {
 		String name;
 		
 		if (codeTypeRef.TypeKind == EnvDTE.vsCMTypeRef.vsCMTypeRefArray) {
-			name = GetName(codeTypeRef.ElementType) + "[]";
+			name = GetNameCodeTypeRef(codeTypeRef.ElementType) + "[]";
 
 		} else if (codeTypeRef.TypeKind == EnvDTE.vsCMTypeRef.vsCMTypeRefVoid) {
 			name = "void";
 
+		} else if (codeTypeRef.TypeKind == EnvDTE.vsCMTypeRef.vsCMTypeRefCodeType) {
+			name = GetNameClass(codeTypeRef.CodeType);
+
 		} else {
-			name = GetName(codeTypeRef.AsFullName);
+			name = GetNameString(codeTypeRef.AsFullName);
 		}
 
 		if (name == null) name = "any";
@@ -149,24 +152,24 @@ namespace TypedRpc {
 	}
 
 	// Returns the name of a type.
-	public String GetName(String codeTypeName) {
+	public String GetNameString(String codeTypeName) {
 		EnvDTE.CodeType codeType;
 		String name;
-
+		
 		codeType = CurrentProject.CodeModel.CodeTypeFromFullName(codeTypeName);
 
-		if (codeType != null) name = GetName(codeType);
+		if (codeType != null) name = GetNameCodeType(codeType);
 		else name = codeTypeName;
 
 		return name;
 	}
 
 	// Returns the name of a type.
-	public String GetName(EnvDTE.CodeType codeType) {
+	public String GetNameCodeType(EnvDTE.CodeType codeType) {
 		String name;
-
+		
 		AddInterface(codeType.FullName);
-
+		
 		switch (codeType.FullName) {
 			case "System.SByte":
 			case "System.Byte":
@@ -185,7 +188,7 @@ namespace TypedRpc {
 			default:
 				name = GetNameClass(codeType); break;
 		}
-
+		
 		return name;
 	}
 
@@ -200,12 +203,26 @@ namespace TypedRpc {
 		// Dictionary
 		else if (codeType.FullName.StartsWith("System.Collections.Generic.Dictionary")) name = "any";
 
+		// Task
+		else if (codeType.FullName.Equals("System.Threading.Tasks.Task")) name = "void";
+		else if (codeType.FullName.StartsWith("System.Threading.Tasks.Task")) name = GetNameGeneric(codeType.FullName);
+
 		// Custom class.
 		else {
 			name = codeType.FullName.Split('.').Last();
 		}
-
+		
 		return name;
+	}
+
+	// Returns the generic type.
+	public String GetNameGeneric(String genericType) {
+		int startIndex = genericType.IndexOf('<');
+		int endIndex = genericType.LastIndexOf('>');
+
+		if (startIndex == -1) return genericType;
+
+		return GetNameString(genericType.Substring(startIndex + 1, (endIndex - startIndex - 1)));
 	}
 
 	// Returns the array type.
@@ -214,13 +231,10 @@ namespace TypedRpc {
 		
 		if (codeType.FullName.EndsWith("[]")) {
 			name = codeType.FullName.Substring(0, codeType.FullName.Length - 2);
-			name = GetName(name);
+			name = GetNameString(name);
 
 		} else if (codeType.FullName.StartsWith("System.Collections.Generic.List")) {
-			int startIndex = "System.Collections.Generic.List<".Length;
-			int length = codeType.FullName.Length - startIndex - 1;
-			name = codeType.FullName.Substring(startIndex, length);
-			name = GetName(name);
+			name = GetNameGeneric(codeType.FullName);
 
 		} else {
 			name = null;
@@ -315,8 +329,8 @@ namespace TypedRpc {
 		String methodType;
 
 		methodName = (clazz.Name + "." + method.Name);
-		methodType = GetName(method.Type);
-
+		methodType = GetNameCodeTypeRef(method.Type);
+		
 		WriteLine(String.Format("return doPost<{0}>('{1}', arguments);", methodType, methodName));
 	}
 	
@@ -327,10 +341,10 @@ namespace TypedRpc {
 		
 		foreach (EnvDTE80.CodeParameter2 parm in method.Parameters) {
 			// Ignores IOwinContext parameters.
-			if (GetName(parm.Type.CodeType) == "IOwinContext") continue;
+			if (GetNameCodeType(parm.Type.CodeType) == "IOwinContext") continue;
 
 			optional = (parm.ParameterKind == EnvDTE80.vsCMParameterKind.vsCMParameterKindOptional) ? "?" : String.Empty;
-			parms.Add(parm.Name + optional + ": " + GetName(parm.Type.CodeType));
+			parms.Add(parm.Name + optional + ": " + GetNameCodeType(parm.Type.CodeType));
 		}
 
 		return String.Join(", ", parms);
@@ -347,7 +361,7 @@ namespace TypedRpc {
 
 	// Builds interface.
 	public void BuildInterface(EnvDTE.CodeType codeType) {
-		WriteLine("export interface " + GetName(codeType) + " {");
+		WriteLine("export interface " + GetNameCodeType(codeType) + " {");
 		PushIndent("    ");
 		BuildProperties((EnvDTE.CodeClass)codeType);
 		PopIndent();
@@ -364,10 +378,8 @@ namespace TypedRpc {
 
 	// Builds a property.
 	public void BuildProperty(EnvDTE.CodeProperty prop) {
-		WriteLine(prop.Name + ": " + GetName(prop.Type) + ";");
+		WriteLine(prop.Name + ": " + GetNameCodeTypeRef(prop.Type) + ";");
 	}
 
 #>
-
-
 

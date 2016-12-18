@@ -14,58 +14,69 @@ Install-Package TypedRpc
 
 To make a class expose its methods for client requests, add the `TypedRpcHandler` attribute to it. All its public methods will be available in TypeScript.
 
-You may use default values for parameters. They will be optional at the client side.
-
-If you need the IOwinContext in your method, add it as a parameter. The generated TypeScript class will ignore it.
-
-### Example
-
-Create a `RpcServerExample.cs` file to your project.
-
 ```C#
 [TypedRpc.TypedRpcHandler]
 public class RpcServerExample
 {
-  public String Greet(String name = "Guest")
-  {
-    return "Hello, " + name + "!";
-  }
+	public String HelloWorld()
+	{
+		return "Hello World!";
+	}
+}
+```
 
-  public String GreetMe(Microsoft.Owin.IOwinContext context)
-  {
-  	  return "Hello, " + context.Authentication.User.Identity.Name + "!";
-  }
+You may use default values for parameters. They will be optional at the client side.
+
+```C#
+public String Greet(String name = "Guest")
+{
+	return "Hello, " + name + "!";
+}
+```
+
+If you need the IOwinContext in your method, add it as a parameter and it will be injected in runtime. The generated TypeScript class will ignore it.
+
+```C#
+public String GreetMe(Microsoft.Owin.IOwinContext context)
+{
+	return "Hello, " + context.Authentication.User.Identity.Name + "!";
+}
+```
+
+Asynchronous methods are supported.
+
+```C#
+public async Task<String> GreetAsync(Microsoft.Owin.IOwinContext context)
+{
+	await Task.Delay(5000);
+	return "Hello async!";
 }
 ```
 
 ## Client
 
-In your TypeCript files, add a reference to the `Scripts/TypedRpc.ts` file to have access to server handlers and its methods.
+Create an `index.ts` file to your project and add a reference to the `Scripts/TypedRpc.ts` file to have access to the server handlers and its methods.
 
-To make a method call, create a new instance of the desired handler class.
+Create a new instance of the desired handler class.
 
 If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
-
-### Example
-
-Create an `index.ts` file to your project and add a reference to the `TypedRpc.ts` file.
 
 ```TypeScript
 /// <reference path="Scripts/TypedRpc.ts" />
 
 let rpc: TypedRpc.RpcServerExample = new TypedRpc.RpcServerExample();
 
-rpc.Greet("New User").done(function(data, jsonResponse) {
-  console.log(data);
-}).fail(function(error, jsonResponse) {
-  console.log(error);
-});
+var callback = function(data, jsonResponse) {
+	console.log(data);
+};
 
-rpc.GreetMe().done(function(data, jsonResponse) {
-  console.log(data);
-}).fail(function(error, jsonResponse) {
-  console.log(error);
-});
+rpc.HelloWorld().done(callback).fail(callback);
+
+rpc.Greet("New User").done(callback).fail(callback);
+
+rpc.GreetMe().done(callback).fail(callback);
+
+rpc.GreetAsync().done(callback).fail(callback);
 ```
 
 Create an `index.html` file to your project and import the `TypedRpc.js` and `index.js` file to it.
