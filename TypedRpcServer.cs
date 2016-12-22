@@ -16,15 +16,9 @@ namespace TypedRpc
         // Serializer
         private JsonSerializer Serializer = new JsonSerializer();
 
-        // Maps RpcServer in OWIN.
-        public static void Map(IAppBuilder app)
-        {
-            app.Map("/typedrpc", appBuilder => appBuilder.Use<TypedRpcServer>(new object[0]));
-        }
-
         // Available handlers.
         private List<Object> Handlers = new List<Object>();
-
+        
         // Constructor
         public TypedRpcServer(OwinMiddleware next)
             : base(next)
@@ -32,7 +26,7 @@ namespace TypedRpc
             // Initializations
             Init();
         }
-
+        
         // Finds all handlers in project.
         private void Init()
         {
