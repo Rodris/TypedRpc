@@ -16,7 +16,7 @@ To make a class expose its methods for client requests, add the `TypedRpcHandler
 
 ```C#
 [TypedRpc.TypedRpcHandler]
-public class RpcServerExample
+public class MyServer
 {
 	public String HelloWorld()
 	{
@@ -64,7 +64,7 @@ If your TypeScript files are not finding the handlers or their methods, update t
 ```TypeScript
 /// <reference path="Scripts/TypedRpc.ts" />
 
-let rpc: TypedRpc.RpcServerExample = new TypedRpc.RpcServerExample();
+let rpc: TypedRpc.MyServer = new TypedRpc.MyServer();
 
 var callback = function(data, jsonResponse) {
 	console.log(data);
