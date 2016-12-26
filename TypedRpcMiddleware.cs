@@ -13,9 +13,6 @@ namespace TypedRpc
     // Server main class.
     public class TypedRpcMiddleware : OwinMiddleware
     {
-        // Serializer
-        private JsonSerializer Serializer = new JsonSerializer();
-
         // Available handlers.
         private List<Object> Handlers = new List<Object>();
         
@@ -66,14 +63,15 @@ namespace TypedRpc
             
             // Sends response.
             context.Response.ContentType = "application/json; charset=utf-8";
-            Serializer.SerializeJsonResponse(context.Response.Body, jResponse);
+            JsonSerializer.Serialize(context.Response.Body, jResponse);
         }
 
         // Handles requests.
-        public async Task<JsonResponse> InvokeMethod(IOwinContext context)
+        public virtual async Task<JsonResponse> InvokeMethod(IOwinContext context)
         {
             // Declarations
             JsonRequest jRequest;
+            JsonResponse jResponse;
             object handler;
             MethodInfo methodInfo;
             object[] parameters;
@@ -86,7 +84,7 @@ namespace TypedRpc
             parameters = null;
 
             // Extracts request.
-            jRequest = Serializer.DeserializeJsonRequest(context.Request.Body);
+            jRequest = JsonSerializer.Deserialize<JsonRequest>(context.Request.Body);
 
             // Validates message.
             if (jRequest == null) return MountError(null, JsonError.ERROR_PARSE);
@@ -109,7 +107,7 @@ namespace TypedRpc
             try
             {
                 // Invokes method.
-                result = methodInfo.Invoke(handler, parameters);
+                result = InvokeMethod(handler, methodInfo, parameters);
 
                 // Checks if result is async.
                 if (result is Task)
@@ -124,22 +122,32 @@ namespace TypedRpc
                     if (result.ToString() == "System.Threading.Tasks.VoidTaskResult") result = null;
                 }
 
-                // Mounts method response.
-                return new JsonResponse()
-                {
-                    Id = jRequest.Id,
-                    Result = result
-                };
+                // Initializes response.
+                jResponse = new JsonResponse();
+                jResponse.Id = jRequest.Id;
+
+                // Checks if result is error.
+                if (result is JsonError) jResponse.Error = (JsonError)result;
+                else jResponse.Result = result;
+
+                return jResponse;
             }
-            catch (Exception)
+            catch (Exception exception)
             {
                 // Handles error.
                 return MountError(jRequest.Id, JsonError.ERROR_INTERNAL);
             }
         }
 
+        // Invokes a method.
+        protected virtual object InvokeMethod(object handler, MethodInfo methodInfo, object[] parameters)
+        {
+            // Invokes method directly.
+            return methodInfo.Invoke(handler, parameters);
+        }
+
         // Creates an error response.
-        private JsonResponse MountError(Object id, int errorCode)
+        protected JsonResponse MountError(Object id, int errorCode)
         {
             return new JsonResponse()
             {

@@ -6,37 +6,45 @@ using System.Text;
 namespace JsonRpc
 {
     // JSON serializer.
-    public class JsonSerializer
+    public static class JsonSerializer
     {
-        // Serializes a response.
-        public void SerializeJsonResponse(Stream stream, JsonResponse jResponse)
+        // Serializes an object.
+        public static string Serialize(object value)
+        {
+            return JsonConvert.SerializeObject(value);
+        }
+
+        // Serializes an object.
+        public static void Serialize(Stream stream, object value)
         {
             // Declarations
             String data;
+            byte[] bytes;
 
-            // Serializes response.
-            data = JsonConvert.SerializeObject(jResponse);
+            // Serializes object.
+            data = JsonConvert.SerializeObject(value);
+            bytes = Encoding.UTF8.GetBytes(data);
 
             // Sends to stream.
-            stream.Write(Encoding.UTF8.GetBytes(data), 0, data.Length);
+            stream.Write(bytes, 0, bytes.Length);
         }
 
         // Deserializes a request.
-        public JsonRequest DeserializeJsonRequest(Stream stream)
+        public static T Deserialize<T>(Stream stream)
         {
             // Declarations
-            JsonRequest jRequest;
+            T value;
 
             try
             {
                 // Deserializes request.
-                jRequest = JsonConvert.DeserializeObject<JsonRequest>(new StreamReader(stream).ReadToEnd());
+                value = JsonConvert.DeserializeObject<T>(new StreamReader(stream).ReadToEnd());
             } catch (Exception)
             {
-                jRequest = null;
+                value = default(T);
             }
             
-            return jRequest;
+            return value;
         }
     }
 

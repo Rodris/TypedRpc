@@ -9,10 +9,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TypedRpc</RootNamespace>
     <AssemblyName>TypedRpc</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -66,7 +67,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypedRpcHandler.cs" />
     <Compile Include="TypedRpcExtensions.cs" />
-    <Compile Include="TypedRpcServer.cs" />
+    <Compile Include="TypedRpcMiddleware.cs" />
     <None Include="NuGet\TypedRpc.nuspec">
       <SubType>Designer</SubType>
     </None>
@@ -84,6 +85,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TypedRpc.ts</LastGenOutput>
     </Content>
+    <None Include="ReleaseNotes.md" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="NuGet\TypedRpc.ts">
