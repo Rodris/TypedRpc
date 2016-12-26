@@ -2,7 +2,7 @@
 
 namespace TypedRpc
 {
-    // Server main class.
+    // Extensions
     public static class TypedRpcExtensions
     {
         /// <summary>
@@ -10,7 +10,7 @@ namespace TypedRpc
         /// </summary>
         public static void MapTypedRpc(this IAppBuilder app)
         {
-            app.Map("/typedrpc", appBuilder => appBuilder.Use<TypedRpcServer>(new object[0]));
+            app.Map("/typedrpc", appBuilder => appBuilder.Use<TypedRpcMiddleware>(new object[0]));
         }
     }
 
