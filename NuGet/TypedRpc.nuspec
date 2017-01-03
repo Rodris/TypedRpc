@@ -9,8 +9,8 @@
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://github.com/Rodris/TypedRpc</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>JsonRpc implementation in .Net OWIN and TypeScript</description>
-    <tags>JsonRpc .Net OWIN TypeScript</tags>
+    <description>Json-Rpc implementation in .Net OWIN and TypeScript</description>
+    <tags>Json-Rpc .Net OWIN TypeScript</tags>
     <dependencies>
       <dependency id="Microsoft.Owin" version="3.0.1" />
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.1" />
