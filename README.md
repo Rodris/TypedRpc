@@ -14,13 +14,13 @@ Install-Package TypedRpc
 
 ### Server
 
-Create a new class `MyServer`.
+Create a new class `MyHandler`.
 
 ```C#
 // To make a class expose its methods for client requests,
 // add the 'TypedRpcHandler' attribute to it.
 [TypedRpc.TypedRpcHandler]
-public class MyServer
+public class MyHandler
 {
 	// All its public methods will be available in TypeScript.
 	public String HelloWorld()
@@ -62,7 +62,7 @@ If your TypeScript files are not finding the handlers or their methods, update t
 /// <reference path="Scripts/TypedRpc.ts" />
 
 // Create a new instance of the desired handler class.
-let rpc: TypedRpc.MyServer = new TypedRpc.MyServer();
+let rpc: TypedRpc.MyHandler = new TypedRpc.MyHandler();
 
 var callback = function(data, jsonResponse) {
 	console.log(data);
