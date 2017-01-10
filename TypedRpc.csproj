@@ -92,6 +92,7 @@
     <None Include="ReleaseNotes.md" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Client\RemoteMethod.ts" />
     <TypeScriptCompile Include="NuGet\TypedRpc.ts">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

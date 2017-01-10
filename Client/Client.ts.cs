@@ -1,78 +1,19 @@
-﻿using JsonRpc;
-using System;
+﻿using System;
 using System.Linq;
 
 namespace TypedRpc.Client
 {
 	public class ClientTS : IClientBuilder
 	{
+		// Name of the remote method file template.
+		private const string FILENAME_REMOTE_METHOD = "TypedRpc.Client.RemoteMethod.ts";
+
 		// File template.
 		private const string TEMPLATE_TS = @"
 namespace TypedRpc {{
-
-	class MethodCall {{
-		private doneCallback = null;
-		private failCallback = null;
-
-		done(callback): MethodCall {{
-			this.doneCallback = callback;
-			return this;
-		}}
-
-		fail(callback): MethodCall {{
-			this.failCallback = callback;
-			return this;
-		}}
-
-		private resolve(jResponse) {{
-			if (this.doneCallback) this.doneCallback(jResponse.result, jResponse);
-		}}
-
-		private reject(jResponse = null) {{
-			if (this.failCallback) {{
-				if (jResponse) this.failCallback(jResponse.error, jResponse);
-				else this.failCallback({{ message: 'Unknown error.' }}, null);
-			}}
-		}}
-	}}
-
-	var nextId = 1;
-
-	function doPost<T>(method, args) {{
-		var parameters = [];
-			for (var i in args) parameters.push(args[i]);
-		var jsonRequest = JSON.stringify({{ method: method, params: parameters, id: nextId }});
-		nextId++;
-		var methodCall = new MethodCall();
-
-		var request = new XMLHttpRequest();
-		request.open('POST', '/typedrpc', true);
-
-		request.onload = function() {{
-			if (request.status >= 200 && request.status < 400) {{
-				var jResponse = JSON.parse(request.responseText);
-				if (jResponse.error) {{
-					methodCall.reject(jResponse);
-				}} else {{
-					methodCall.resolve(jResponse);
-				}}
-			}}
-			else {{
-				methodCall.reject();
-			}}
-		}};
-
-		request.onerror = function() {{
-			methodCall.reject();
-		}};
-
-		request.send(jsonRequest);
-
-		return methodCall;
-	}}
-
 {0}
 {1}
+{2}
 }}
 ";
 
@@ -85,7 +26,7 @@ namespace TypedRpc {{
 
 		// Method template.
 		private const string TEMPLATE_METHOD = @"
-		{0}({1}): MethodCall {{
+		{0}({1}): RemoteMethod {{
 			{2}
 		}}
 ";
@@ -97,15 +38,26 @@ namespace TypedRpc {{
 	}}
 ";
 
+		// Loads the RemoteMethod.ts content.
+		private String ReadRemoteMethod()
+		{
+			string remoteMethod = new System.IO.StreamReader(this.GetType().Assembly.GetManifestResourceStream(FILENAME_REMOTE_METHOD)).ReadToEnd();
+			remoteMethod = remoteMethod.Replace("\r\n", "\r\n\t");
+
+			return remoteMethod;
+		}
+
 		// Builds the client code.
 		public string BuildClient(Model model)
 		{
+			string remoteMethod = ReadRemoteMethod();
+
 			string handlers = string.Concat(model.Handlers.Select(h => BuildHandler(h)));
 
 			string interfaces = string.Concat(model.Interfaces.Select(i => BuildInterface(i)));
 
 			// Builds client;
-			string client = string.Format(TEMPLATE_TS, handlers, interfaces);
+			string client = string.Format(TEMPLATE_TS, remoteMethod, handlers, interfaces);
 
 			return client;
 		}
@@ -180,7 +132,7 @@ namespace TypedRpc {{
 		{
 			string parameters = string.Join(", ", method.Parameters.Select(p => BuildParameter(p)));
 
-			string methodBody = string.Format("return doPost<{0}>('{1}.{2}', arguments);",
+			string methodBody = string.Format("return RemoteMethod.call<{0}>('{1}.{2}', arguments);",
 				GetNameType(method.ReturnType),
 				handler.Name,
 				method.Name);
