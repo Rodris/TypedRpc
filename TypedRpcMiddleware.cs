@@ -13,45 +13,12 @@ namespace TypedRpc
     // Server main class.
     public class TypedRpcMiddleware : OwinMiddleware
     {
-        // Available handlers.
-        private List<Object> Handlers = new List<Object>();
-        
         // Constructor
         public TypedRpcMiddleware(OwinMiddleware next)
             : base(next)
         {
-            // Initializations
-            Init();
         }
         
-        // Finds all handlers in project.
-        private void Init()
-        {
-            // Declarations
-            List<Type> types;
-            Type handlerType;
-            ConstructorInfo constructor;
-
-            handlerType = typeof(TypedRpcHandler);
-            types = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => !p.IsAbstract && Attribute.IsDefined(p, handlerType))
-                .ToList();
-
-            // Creates handles.
-            foreach (Type hType in types)
-            {
-                // Searches for default constructor.
-                constructor = hType.GetConstructor(System.Type.EmptyTypes);
-
-                // Validates constructor.
-                if (constructor == null) throw new Exception(String.Format("{0} has no default constructor.", hType.FullName));
-
-                // Creates handle.
-                Handlers.Add(constructor.Invoke(null));
-            }
-        }
-
         // Handles requests.
         public override async Task Invoke(IOwinContext context)
         {
@@ -147,12 +114,12 @@ namespace TypedRpc
         }
 
         // Creates an error response.
-        protected JsonResponse MountError(Object id, int errorCode)
+        protected JsonResponse MountError(Object id, JsonError error)
         {
             return new JsonResponse()
             {
                 Id = id,
-                Error = errorCode
+                Error = error
             };
         }
 
@@ -166,7 +133,7 @@ namespace TypedRpc
             methodInfo = null;
 
             // Looks for handler in project.
-            handler = Handlers.FirstOrDefault(h => fullMethodName.StartsWith(h.GetType().Name));
+            handler = TypedRpcHandler.Handlers.FirstOrDefault(h => fullMethodName.StartsWith(h.GetType().Name));
 
             // Validates handler.
             if (handler != null)

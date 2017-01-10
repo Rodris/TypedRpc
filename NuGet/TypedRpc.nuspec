@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TypedRpc</id>
-    <version>1.2.1</version>
+    <version>1.3.0</version>
     <title>TypedRpc</title>
     <authors>Rodris</authors>
     <owners>Rodris</owners>
@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/Rodris/TypedRpc</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Json-Rpc implementation in .Net OWIN and TypeScript</description>
-    <tags>Json-Rpc .Net OWIN TypeScript</tags>
+    <tags>Json-Rpc .Net OWIN TypeScript TypedRpc</tags>
     <dependencies>
       <dependency id="Microsoft.Owin" version="3.0.1" />
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.1" />
@@ -20,6 +20,7 @@
   </metadata>
   <files>
     <file src="..\bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
+    <file src="ModelBuilderDesign.t4" target="content\Scripts\ModelBuilderDesign.t4" />
     <file src="TypedRpc.tt" target="content\Scripts\TypedRpc.tt" />
     <file src="TypedRpcStartup.cs" target="content\TypedRpcStartup.cs" />
   </files>

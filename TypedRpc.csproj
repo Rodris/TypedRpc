@@ -59,10 +59,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\ModelBuilderRuntime.cs" />
+    <Compile Include="Client\Client.ts.cs" />
+    <Compile Include="Client\Model.cs" />
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="JsonError.cs" />
     <Compile Include="JsonResponse.cs" />
     <Compile Include="JsonRequest.cs" />
+    <None Include="NuGet\ModelBuilderDesign.t4" />
     <None Include="NuGet\TypedRpcStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypedRpcHandler.cs" />
