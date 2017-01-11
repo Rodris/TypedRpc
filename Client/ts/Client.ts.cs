@@ -5,8 +5,8 @@ namespace TypedRpc.Client
 {
 	public class ClientTS : IClientBuilder
 	{
-		// Name of the remote method file template.
-		private const string FILENAME_REMOTE_METHOD = "TypedRpc.Client.RemoteMethod.ts";
+		// Name of the remote method file.
+		private const string FILENAME_REMOTE_METHOD = "TypedRpc.Client.ts.RemoteMethod.ts";
 
 		// File template.
 		private const string TEMPLATE_TS = @"
@@ -37,6 +37,12 @@ namespace TypedRpc {{
 {1}
 	}}
 ";
+
+		// The builder type.
+		public string Type { get { return "ts"; } }
+
+		// The builder language.
+		public string Language { get { return "TypeScript"; } }
 
 		// Loads the RemoteMethod.ts content.
 		private String ReadRemoteMethod()

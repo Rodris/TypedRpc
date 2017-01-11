@@ -1,17 +1,15 @@
 ﻿using JsonRpc;
 using Microsoft.Owin;
 using Newtonsoft.Json.Linq;
-using Owin;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace TypedRpc
 {
-    // Server main class.
-    public class TypedRpcMiddleware : OwinMiddleware
+	// Server main class.
+	public class TypedRpcMiddleware : OwinMiddleware
     {
         // Constructor
         public TypedRpcMiddleware(OwinMiddleware next)

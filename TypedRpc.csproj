@@ -60,8 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\ModelBuilderRuntime.cs" />
-    <Compile Include="Client\Client.ts.cs" />
+    <Compile Include="Client\ts\Client.ts.cs" />
     <Compile Include="Client\Model.cs" />
+    <Compile Include="Client\TypedRpcClientMiddleware.cs" />
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="JsonError.cs" />
     <Compile Include="JsonResponse.cs" />
@@ -92,7 +93,7 @@
     <None Include="ReleaseNotes.md" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Client\RemoteMethod.ts" />
+    <EmbeddedResource Include="Client\ts\RemoteMethod.ts" />
     <TypeScriptCompile Include="NuGet\TypedRpc.ts">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

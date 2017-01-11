@@ -3,6 +3,12 @@
 	// Interface to build client code.
 	public interface IClientBuilder
 	{
+		// The builder type.
+		string Type { get; }
+
+		// The builder language.
+		string Language { get; }
+
 		// Builds the client code.
 		string BuildClient(Model model);
 	}
