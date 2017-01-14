@@ -67,6 +67,7 @@
     <Compile Include="JsonError.cs" />
     <Compile Include="JsonResponse.cs" />
     <Compile Include="JsonRequest.cs" />
+    <Compile Include="TypedRpcOptions.cs" />
     <None Include="NuGet\ModelBuilderDesign.t4" />
     <None Include="NuGet\TypedRpcStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

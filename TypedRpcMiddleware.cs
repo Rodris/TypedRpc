@@ -11,10 +11,15 @@ namespace TypedRpc
 	// Server main class.
 	public class TypedRpcMiddleware : OwinMiddleware
     {
+		// The options.
+		private TypedRpcOptions Options;
+
         // Constructor
-        public TypedRpcMiddleware(OwinMiddleware next)
+        public TypedRpcMiddleware(OwinMiddleware next, TypedRpcOptions options)
             : base(next)
         {
+			// Initializations
+			Options = options;
         }
         
         // Handles requests.
@@ -99,6 +104,9 @@ namespace TypedRpc
             }
             catch (Exception exception)
             {
+				// Triggers exception event.
+				if (Options != null && Options.OnCatch != null) Options.OnCatch(context, exception);
+
                 // Handles error.
                 return MountError(jRequest.Id, JsonError.ERROR_INTERNAL);
             }
