@@ -1,4 +1,8 @@
-﻿# 1.2.1
+﻿# 1.3.0
+- Client generated code available for download.
+- OnCatch action added to handle internal erros.
+
+# 1.2.1
 - Changed middleware name to TypedRpcMiddleware.
 - Changed the TypedRpc startup configuration.
 - Changed path from /rpc to /typedrpc.

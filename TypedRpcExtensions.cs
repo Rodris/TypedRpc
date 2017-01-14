@@ -9,7 +9,7 @@ namespace TypedRpc
         /// <summary>
         /// Maps RpcServer in OWIN.
         /// </summary>
-        public static void MapTypedRpc(this IAppBuilder app, TypedRpcOptions options)
+        public static void MapTypedRpc(this IAppBuilder app, TypedRpcOptions options = null)
         {
 			app.Map("/typedrpc/client", appBuilder => appBuilder.Use<TypedRpcClientMiddleware>(new object[0]));
 			app.Map("/typedrpc", appBuilder => appBuilder.Use<TypedRpcMiddleware>(new object[] { options }));
