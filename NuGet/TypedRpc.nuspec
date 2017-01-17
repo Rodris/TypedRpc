@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TypedRpc</id>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <title>TypedRpc</title>
     <authors>Rodris</authors>
     <owners>Rodris</owners>
@@ -20,7 +20,7 @@
   </metadata>
   <files>
     <file src="..\bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
-    <file src="ModelBuilderDesign.t4" target="content\Scripts\ModelBuilderDesign.t4" />
+    <file src="ModelBuilderDesign.tt" target="content\Scripts\ModelBuilderDesign.tt" />
     <file src="TypedRpc.tt" target="content\Scripts\TypedRpc.tt" />
     <file src="TypedRpcStartup.cs" target="content\TypedRpcStartup.cs" />
   </files>

@@ -1,4 +1,7 @@
-﻿# 1.3.0
+﻿# 1.3.1
+- Fixed reference to dll in T4 template.
+
+# 1.3.0
 - Client generated code available for download.
 - OnCatch action added to handle internal erros.
 

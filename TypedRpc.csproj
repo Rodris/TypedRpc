@@ -68,7 +68,15 @@
     <Compile Include="JsonResponse.cs" />
     <Compile Include="JsonRequest.cs" />
     <Compile Include="TypedRpcOptions.cs" />
-    <None Include="NuGet\ModelBuilderDesign.t4" />
+    <Content Include="NuGet\ModelBuilderDesign.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ModelBuilderDesign.t4</LastGenOutput>
+    </Content>
+    <None Include="NuGet\ModelBuilderDesign.t4">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ModelBuilderDesign.tt</DependentUpon>
+    </None>
     <None Include="NuGet\TypedRpcStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypedRpcHandler.cs" />
