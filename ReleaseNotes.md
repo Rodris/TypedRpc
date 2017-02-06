@@ -1,4 +1,5 @@
 ﻿# 1.3.2
+- Generate TypeScript code for public methods only.
 - Moved t4 templates to TypedRpc subfolder.
 
 # 1.3.1
