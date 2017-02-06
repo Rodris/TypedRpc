@@ -1,4 +1,7 @@
-﻿# 1.3.1
+﻿# 1.3.2
+- Moved t4 templates to TypedRpc subfolder.
+
+# 1.3.1
 - Fixed reference to dll in T4 template.
 
 # 1.3.0
