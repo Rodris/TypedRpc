@@ -214,7 +214,10 @@
 				{
 					if (method.Kind == EnvDTE.vsCMElement.vsCMElementFunction && method.Name != codeClass.Name)
 					{
-						methods.Add(BuildMethod((EnvDTE.CodeFunction)method));
+						if (((EnvDTE.CodeFunction)method).Access == EnvDTE.vsCMAccess.vsCMAccessPublic)
+						{
+							methods.Add(BuildMethod((EnvDTE.CodeFunction)method));
+						}
 					}
 				}
 
