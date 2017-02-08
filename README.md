@@ -59,7 +59,7 @@ Create an `index.ts` file to your project and add a reference to the `Scripts/Ty
 If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
 
 ```TypeScript
-/// <reference path="Scripts/TypedRpc.ts" />
+/// <reference path="Scripts/TypedRpc/TypedRpc.ts" />
 
 // Create a new instance of the desired handler class.
 let rpc: TypedRpc.MyHandler = new TypedRpc.MyHandler();
@@ -86,7 +86,7 @@ Create an `index.html` file to your project and import the `TypedRpc.js` and `in
 <head>
     <title>TypedRpc Example</title>
 	<meta charset="utf-8" />
-    <script src="Scripts/TypedRpc.js"></script>
+    <script src="Scripts/TypedRpc/TypedRpc.js"></script>
     <script src="index.js"></script>
 </head>
 <body>
