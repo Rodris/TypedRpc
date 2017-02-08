@@ -24,13 +24,6 @@ namespace TypedRpc {{
 	}}
 ";
 
-		// Method template.
-		private const string TEMPLATE_METHOD = @"
-		{0}({1}): RemoteMethod {{
-			{2}
-		}}
-";
-
 		// Interface template.
 		private const string TEMPLATE_INTERFACE = @"
 	export interface {0} {{
@@ -133,20 +126,31 @@ namespace TypedRpc {{
 			return clazz;
 		}
 
+		// Method template.
+		private const string TEMPLATE_METHOD_FUNC = @"
+		{1}({2}): RemoteFunc<{3}> {{
+			return RemoteMethod.callFunc<{3}>('{0}.{1}', arguments);
+		}}
+";
+
+		private const string TEMPLATE_METHOD_ACTION = @"
+		{1}({2}): RemoteAction {{
+			return RemoteMethod.callAction('{0}.{1}', arguments);
+		}}
+";
+
 		// Builds a method.
 		private string BuildMethod(Handler handler, Method method)
 		{
 			string parameters = string.Join(", ", method.Parameters.Select(p => BuildParameter(p)));
+			string returnType = GetNameType(method.ReturnType);
+			string templateMethod = (returnType == "void") ? TEMPLATE_METHOD_ACTION : TEMPLATE_METHOD_FUNC;
 
-			string methodBody = string.Format("return RemoteMethod.call<{0}>('{1}.{2}', arguments);",
-				GetNameType(method.ReturnType),
+			string methodText = string.Format(templateMethod,
 				handler.Name,
-				method.Name);
-
-			string methodText = string.Format(TEMPLATE_METHOD,
 				method.Name,
 				string.Join(", ", parameters),
-				methodBody);
+				returnType);
 
 			return methodText;
 		}
