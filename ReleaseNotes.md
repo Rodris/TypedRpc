@@ -1,4 +1,5 @@
 ﻿# 1.3.2
+- Added types to methods callbacks.
 - Generate TypeScript code for public methods only.
 - Change .Net Framework version to 4.5.
 - Moved t4 templates to TypedRpc subfolder.
