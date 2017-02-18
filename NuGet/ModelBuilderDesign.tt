@@ -355,10 +355,10 @@
 		public Property[] BuildProperties(EnvDTE.CodeClass codeClass) {
 			List<Property> properties = new List<Property>();
 
-			foreach (EnvDTE.CodeProperty codeProperty in codeClass.Members) {
-				if (codeProperty.Kind != EnvDTE.vsCMElement.vsCMElementProperty) continue;
+			foreach (EnvDTE.CodeElement codeElement in codeClass.Members) {
+				if (codeElement.Kind != EnvDTE.vsCMElement.vsCMElementProperty) continue;
 
-				properties.Add(BuildProperty(codeProperty));
+				properties.Add(BuildProperty((EnvDTE.CodeProperty)codeElement));
 			}
 
 			return properties.ToArray();
