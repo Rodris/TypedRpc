@@ -60,13 +60,9 @@
 		// Builds model.
 		public Model BuildModel()
 		{
-			Handler[] handlers = BuildHandlers();
-
-			Model model = new Model()
-			{
-				Handlers = handlers,
-				Interfaces = BuildInterfaces()
-			};
+			Model model = new Model();
+			model.Handlers = BuildHandlers();
+			BuildInterfaces(model);
 
 			return model;
 		}
@@ -272,21 +268,26 @@
 		}
 
 		// Builds the interfaces.
-		private Interface[] BuildInterfaces()
+		private void BuildInterfaces(Model model)
 		{
 			// Declarations
 			List<Interface> interfaces;
+			List<AEnum> enums;
 			int index;
 
 			// Initializations
 			interfaces = new List<Interface>();
+			enums = new List<AEnum>();
 			index = 0;
 
 			// The code generation might find new interfaces, so we use the 'while' loop to check for updated 'Count'.
 			while (index < Interfaces.Count)
 			{
 				// Builds the interface.
-				interfaces.Add(BuildInterface(Interfaces[index]));
+				switch (Interfaces[index].Kind) {
+					case EnvDTE.vsCMElement.vsCMElementClass: interfaces.Add(BuildInterface((EnvDTE.CodeClass)Interfaces[index])); break;
+					case EnvDTE.vsCMElement.vsCMElementEnum: enums.Add(BuildEnum((EnvDTE.CodeEnum)Interfaces[index])); break;
+				}
 
 				// Next interface.
 				index++;
@@ -294,18 +295,56 @@
 
 			// All interfaces generated.
 			Interfaces.Clear();
+			
+			model.Interfaces = interfaces.ToArray();
+			model.Enums = enums.ToArray();
+		}
 
-			return interfaces.ToArray();
+		// Builds an enum.
+		private AEnum BuildEnum(EnvDTE.CodeEnum codeEnum)
+		{
+			EnumValue[] enumValues = BuildEnumValues(codeEnum);
+
+			AEnum aEnum = new AEnum
+			{
+				Name = codeEnum.Name,
+				Values = enumValues
+			};
+			
+			return aEnum;
+		}
+
+		// Builds enum values.
+		private EnumValue[] BuildEnumValues(EnvDTE.CodeEnum codeEnum) {
+			List<EnumValue> enumValues = new List<EnumValue>();
+
+			foreach (EnvDTE.CodeVariable codeVariable in codeEnum.Members) {
+				enumValues.Add(BuildEnumValue(codeVariable));
+			}
+
+			return enumValues.ToArray();
+		}
+
+		// Builds an enum value.
+		private EnumValue BuildEnumValue(EnvDTE.CodeVariable codeVariable)
+		{
+			EnumValue enumValue = new EnumValue()
+			{
+				Name = codeVariable.Name,
+				Value = codeVariable.InitExpression != null ? codeVariable.InitExpression.ToString() : string.Empty
+			};
+
+			return enumValue;
 		}
 
 		// Builds an interface.
-		private Interface BuildInterface(EnvDTE.CodeType codeType)
+		private Interface BuildInterface(EnvDTE.CodeClass codeClass)
 		{
-			Property[] properties = BuildProperties((EnvDTE.CodeClass)codeType);
+			Property[] properties = BuildProperties(codeClass);
 
 			Interface theInterface = new Interface
 			{
-				Name = codeType.Name,
+				Name = codeClass.Name,
 				Properties = properties
 			};
 			

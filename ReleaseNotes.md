@@ -1,4 +1,7 @@
-﻿# 1.3.2
+﻿# 1.4.0
+- Generates enum types.
+
+# 1.3.2
 - Added types to methods callbacks.
 - Generate TypeScript code for public methods only.
 - Change .Net Framework version to 4.5.

@@ -24,6 +24,7 @@
 	{
 		public Handler[] Handlers { get; set; }
 		public Interface[] Interfaces { get; set; }
+		public AEnum[] Enums { get; set; }
 	}
 
 	// Class that represents a TypedRpcHandler.
@@ -61,6 +62,20 @@
 	{
 		public string Name { get; set; }
 		public MType Type { get; set; }
+	}
+
+	// Enum defined.
+	public class AEnum
+	{
+		public string Name { get; set; }
+		public EnumValue[] Values { get; set; }
+	}
+
+	// Enum value.
+	public class EnumValue
+	{
+		public string Name { get; set; }
+		public string Value { get; set; }
 	}
 
 	// A type in model.

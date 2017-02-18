@@ -14,6 +14,7 @@ namespace TypedRpc {{
 {0}
 {1}
 {2}
+{3}
 }}
 ";
 
@@ -27,6 +28,13 @@ namespace TypedRpc {{
 		// Interface template.
 		private const string TEMPLATE_INTERFACE = @"
 	export interface {0} {{
+{1}
+	}}
+";
+
+		// Enum template.
+		private const string TEMPLATE_ENUM = @"
+	export enum {0} {{
 {1}
 	}}
 ";
@@ -55,8 +63,10 @@ namespace TypedRpc {{
 
 			string interfaces = string.Concat(model.Interfaces.Select(i => BuildInterface(i)));
 
+			string enums = string.Concat(model.Enums.Select(e => BuildEnum(e)));
+
 			// Builds client;
-			string client = string.Format(TEMPLATE_TS, remoteMethod, handlers, interfaces);
+			string client = string.Format(TEMPLATE_TS, remoteMethod, handlers, enums, interfaces);
 
 			return client;
 		}
@@ -174,6 +184,24 @@ namespace TypedRpc {{
 			string propertyText = string.Format("		{0}: {1};", property.Name, GetNameType(property.Type));
 
 			return propertyText;
+		}
+
+		// Builds an enum.
+		private string BuildEnum(AEnum aEnum)
+		{
+			string values = string.Join(",\r\n", aEnum.Values.Select(ev => BuildEnumValue(ev)));
+			return string.Format(TEMPLATE_ENUM, aEnum.Name, string.Join("\r\n", values));
+		}
+
+		// Builds an enum value.
+		private string BuildEnumValue(EnumValue enumValue)
+		{
+			string enumValueText;
+
+			if (string.IsNullOrWhiteSpace(enumValue.Value)) enumValueText = string.Format("		{0}", enumValue.Name);
+			else enumValueText = string.Format("		{0} = {1}", enumValue.Name, enumValue.Value);
+
+			return enumValueText;
 		}
 
 	}
