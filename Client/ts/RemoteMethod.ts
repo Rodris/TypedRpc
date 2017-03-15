@@ -77,7 +77,7 @@ abstract class RemoteMethod<T> {
 }
 
 // A Func returns a value.
-class RemoteFunc<T> extends RemoteMethod<T> {
+export class RemoteFunc<T> extends RemoteMethod<T> {
     private funcCallback: FuncCallback<T> = null;
 
     done(callback: FuncCallback<T>): RemoteFunc<T> {
@@ -91,7 +91,7 @@ class RemoteFunc<T> extends RemoteMethod<T> {
 }
 
 // An action doesn't return a value.
-class RemoteAction extends RemoteMethod<void> {
+export class RemoteAction extends RemoteMethod<void> {
     private actionCallback: ActionCallback = null;
 
     done(callback: ActionCallback): RemoteAction {

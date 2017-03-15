@@ -15,11 +15,10 @@ namespace TypedRpc.Client
 		// Builds model.
 		public Model BuildModel()
 		{
-			Model model = new Model()
-			{
-				Handlers = TypedRpcHandler.Handlers.Select(h => BuildHandler(h.GetType())).ToArray(),
-				Interfaces = BuildInterfaces()
-			};
+			// Builds model.
+			Model model = new Model();
+			model.Handlers = TypedRpcHandler.Handlers.Select(h => BuildHandler(h.GetType())).ToArray();
+			BuildInterfaces(model);
 
 			return model;
 		}
@@ -117,21 +116,24 @@ namespace TypedRpc.Client
 		}
 
 		// Builds the interfaces.
-		private Interface[] BuildInterfaces()
+		private void BuildInterfaces(Model model)
 		{
 			// Declarations
 			List<Interface> interfaces;
+			List<AEnum> enums;
 			int index;
 
 			// Initializations
 			interfaces = new List<Interface>();
+			enums = new List<AEnum>();
 			index = 0;
 
 			// The code generation might find new interfaces, so we use the 'while' loop to check for updated 'Count'.
 			while (index < InterfacesTypes.Count)
 			{
 				// Builds the interface.
-				interfaces.Add(BuildInterface(InterfacesTypes[index]));
+				if (InterfacesTypes[index].IsClass) interfaces.Add(BuildInterface(InterfacesTypes[index]));
+				else if (InterfacesTypes[index].IsEnum) enums.Add(BuildEnum(InterfacesTypes[index]));
 
 				// Next interface.
 				index++;
@@ -140,7 +142,44 @@ namespace TypedRpc.Client
 			// All interfaces generated.
 			InterfacesTypes.Clear();
 
-			return interfaces.ToArray();
+			model.Interfaces = interfaces.ToArray();
+			model.Enums = enums.ToArray();
+		}
+		
+		// Builds an enum.
+		private AEnum BuildEnum(Type mType)
+		{
+			EnumValue[] enumValues = BuildEnumValues(mType);
+
+			AEnum aEnum = new AEnum
+			{
+				Name = mType.Name,
+				Values = enumValues
+			};
+
+			return aEnum;
+		}
+
+		// Builds enum values.
+		private EnumValue[] BuildEnumValues(Type mType)
+		{
+			List<EnumValue> enumValues = new List<EnumValue>();
+			
+			for (int i = 0; i < mType.GetEnumNames().Length; i++)
+			{
+				string name = mType.GetEnumNames()[i];
+				object value = mType.GetEnumValues().GetValue(i);
+				//Convert.ChangeType(Enum.Parse(mType, name), mType.GetEnumUnderlyingType()).ToString()
+				value = Convert.ChangeType(value, mType.GetEnumUnderlyingType());
+				
+				enumValues.Add(new EnumValue()
+				{
+					Name = name,
+					Value = value.ToString()
+				});
+			}
+
+			return enumValues.ToArray();
 		}
 
 		// Builds an interface.
