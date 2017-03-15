@@ -169,7 +169,6 @@ namespace TypedRpc.Client
 			{
 				string name = mType.GetEnumNames()[i];
 				object value = mType.GetEnumValues().GetValue(i);
-				//Convert.ChangeType(Enum.Parse(mType, name), mType.GetEnumUnderlyingType()).ToString()
 				value = Convert.ChangeType(value, mType.GetEnumUnderlyingType());
 				
 				enumValues.Add(new EnumValue()
@@ -197,10 +196,12 @@ namespace TypedRpc.Client
 		// Builds a property.
 		private Property BuildProperty(PropertyInfo propertyInfo)
 		{
+			Type type = Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType;
+
 			Property property = new Property()
 			{
 				Name = propertyInfo.Name,
-				Type = BuildMType(propertyInfo.PropertyType)
+				Type = BuildMType(type)
 			};
 
 			return property;

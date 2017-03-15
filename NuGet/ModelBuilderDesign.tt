@@ -80,7 +80,8 @@
 			mType = new MType();
 			mType.Name = codeType.Name;
 			mType.FullName = codeType.FullName;
-			
+			if (mType.FullName.EndsWith("?")) mType.FullName = mType.FullName.Substring(0, mType.FullName.Length - 1);
+
 			// Checks type type.
 			if (codeType.FullName.EndsWith("[]")) mType.Type = MType.MTType.Array;
 			else if (codeType.FullName.StartsWith("System.Collections.Generic.List")) mType.Type = MType.MTType.List;

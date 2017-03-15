@@ -1,5 +1,6 @@
 ﻿# 1.4.0
 - Generates enum types.
+- Generates nullable properties of interfaces.
 
 # 1.3.2
 - Added types to methods callbacks.
