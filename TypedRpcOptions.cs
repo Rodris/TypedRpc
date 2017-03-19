@@ -1,4 +1,5 @@
-﻿using Microsoft.Owin;
+﻿using JsonRpc;
+using Microsoft.Owin;
 using System;
 
 namespace TypedRpc
@@ -11,6 +12,6 @@ namespace TypedRpc
 		/// <summary>
 		/// Catches internal exceptions in TypedRpc.
 		/// </summary>
-		public Action<IOwinContext, Exception> OnCatch { get; set; }
+		public Action<string, IOwinContext, Exception> OnCatch { get; set; }
 	}
 }

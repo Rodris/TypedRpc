@@ -30,21 +30,9 @@ namespace JsonRpc
         }
 
         // Deserializes a request.
-        public static T Deserialize<T>(Stream stream)
+        public static T Deserialize<T>(string data)
         {
-            // Declarations
-            T value;
-
-            try
-            {
-                // Deserializes request.
-                value = JsonConvert.DeserializeObject<T>(new StreamReader(stream).ReadToEnd());
-            } catch (Exception)
-            {
-                value = default(T);
-            }
-            
-            return value;
+            return JsonConvert.DeserializeObject<T>(data);
         }
     }
 

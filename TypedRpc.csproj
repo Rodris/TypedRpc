@@ -33,6 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
     <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
@@ -68,14 +74,18 @@
     <Compile Include="JsonResponse.cs" />
     <Compile Include="JsonRequest.cs" />
     <Compile Include="TypedRpcOptions.cs" />
-    <Content Include="NuGet\ModelBuilderDesign.tt">
+    <Compile Include="Client\ModelBuilderDesign.cs" />
+    <Content Include="NuGet\TypedRpcAssembly.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ModelBuilderDesign.t4</LastGenOutput>
+      <LastGenOutput>TypedRpcAssembly.t4</LastGenOutput>
     </Content>
-    <None Include="NuGet\ModelBuilderDesign.t4">
+    <None Include="NuGet\TypedRpcAssembly.t4">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>ModelBuilderDesign.tt</DependentUpon>
+      <DependentUpon>TypedRpcAssembly.tt</DependentUpon>
+    </None>
+    <None Include="NuGet\TypedRpc.Debug.nuspec">
+      <SubType>Designer</SubType>
     </None>
     <None Include="NuGet\TypedRpcStartup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -103,6 +113,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Client\ts\RemoteMethod.ts" />
+  </ItemGroup>
+  <ItemGroup>
     <TypeScriptCompile Include="NuGet\TypedRpc.ts">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
