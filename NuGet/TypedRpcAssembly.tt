@@ -1,0 +1,26 @@
+﻿<#@ template debug="true" hostspecific="true" language="C#" #>
+<#@ output extension=".t4" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="EnvDTE80" #>
+<#@ assembly name="VSLangProj" #>
+<#
+	// Initializations
+	IServiceProvider serviceProvider = (IServiceProvider)this.Host;
+	EnvDTE.DTE dte = (EnvDTE.DTE) serviceProvider.GetService(typeof(EnvDTE.DTE));
+ 
+	var templateItem = dte.Solution.FindProjectItem(this.Host.TemplateFile);
+	var project = templateItem.ContainingProject;
+	var vsProject = project.Object as VSLangProj.VSProject;
+	string assemblyDirective = "\<#@ assembly name=\"$(ProjectDir)$(OutDir)TypedRpc.dll\" \#>";
+
+	foreach(var referenceObj in vsProject.References)
+	{
+		var reference = (VSLangProj.Reference)referenceObj;
+		if (reference.Name == "TypedRpc") {
+			assemblyDirective = string.Format("\<#@ assembly name=\"{0}\" \#>", reference.Path);
+			break;
+		}
+	}
+
+	WriteLine(assemblyDirective);
+#>

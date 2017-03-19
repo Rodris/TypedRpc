@@ -20,7 +20,7 @@
   </metadata>
   <files>
     <file src="..\bin\Release\TypedRpc.dll" target="lib\TypedRpc.dll" />
-    <file src="ModelBuilderDesign.tt" target="content\Scripts\TypedRpc\ModelBuilderDesign.tt" />
+    <file src="TypedRpcAssembly.tt" target="content\Scripts\TypedRpc\TypedRpcAssembly.tt" />
     <file src="TypedRpc.tt" target="content\Scripts\TypedRpc\TypedRpc.tt" />
     <file src="TypedRpcStartup.cs" target="content\TypedRpcStartup.cs" />
   </files>

@@ -1,37 +1,10 @@
-﻿<#@ template debug="true" hostspecific="true" language="C#" #>
-<#@ output extension=".t4" #>
-<#@ assembly name="EnvDTE" #>
-<#@ assembly name="EnvDTE80" #>
-<#@ assembly name="VSLangProj" #>
-<#
-	// Initializations
-	IServiceProvider serviceProvider = (IServiceProvider)this.Host;
-	EnvDTE.DTE dte = (EnvDTE.DTE) serviceProvider.GetService(typeof(EnvDTE.DTE));
- 
-	var templateItem = dte.Solution.FindProjectItem(this.Host.TemplateFile);
-	var project = templateItem.ContainingProject;
-	var vsProject = project.Object as VSLangProj.VSProject;
-	string assemblyDirective = "\<#@ assembly name=\"$(ProjectDir)$(OutDir)TypedRpc.dll\" \#>";
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-	foreach(var referenceObj in vsProject.References)
-	{
-		var reference = (VSLangProj.Reference)referenceObj;
-		if (reference.Name == "TypedRpc") {
-			assemblyDirective = string.Format("\<#@ assembly name=\"{0}\" \#>", reference.Path);
-			break;
-		}
-	}
-
-	WriteLine(assemblyDirective);
-#>
-\<#@ assembly name="EnvDTE" \#>
-\<#@ assembly name="EnvDTE80" \#>
-\<#@ assembly name="System.Core" \#>
-\<#@ import namespace="System.Linq" \#>
-\<#@ import namespace="System.Collections.Generic" \#>
-\<#@ import namespace="TypedRpc.Client" \#>
-\<#+
-	// Creates the client model in runtime.
+namespace TypedRpc.Client
+{
+	// Creates the client model in design.
 	public class ModelBuilderDesign : IModelBuilder
 	{
 		// DTE
@@ -39,17 +12,18 @@
 
 		// Current project.
 		private EnvDTE.Project CurrentProject;
-		
+
 		// Found interfaces.
 		private List<EnvDTE.CodeType> Interfaces = new List<EnvDTE.CodeType>();
 
 		// A void type.
-		private static readonly MType TypeVoid = new MType() {
+		private static readonly MType TypeVoid = new MType()
+		{
 			Name = "Void",
 			FullName = "System.Void",
 			Type = MType.MTType.System
 		};
-
+		
 		// Constructor
 		public ModelBuilderDesign(EnvDTE.DTE dte)
 		{
@@ -75,7 +49,7 @@
 
 			// Validates type.
 			if (codeType == null) return TypeVoid;
-
+			
 			// New type.
 			mType = new MType();
 			mType.Name = codeType.Name;
@@ -90,7 +64,7 @@
 			else if (codeType.FullName.StartsWith("Microsoft.Owin.IOwinContext")) mType.Type = MType.MTType.OwinContext;
 			else if (codeType.FullName.StartsWith("System")) mType.Type = MType.MTType.System;
 			else mType.Type = MType.MTType.Custom;
-			
+
 			// If array.
 			if (mType.Type == MType.MTType.Array)
 			{
@@ -98,25 +72,26 @@
 				string codeTypeName = codeType.FullName.Substring(0, codeType.FullName.Length - 2);
 				mType.GenericType = BuildMType(CurrentProject.CodeModel.CodeTypeFromFullName(codeTypeName));
 			}
-			
+
 			// If List or Task.
 			if (mType.Type == MType.MTType.List || mType.Type == MType.MTType.Task)
 			{
-				 mType.GenericType = BuildMType(GetGeneric(codeType.FullName));
+				mType.GenericType = BuildMType(GetGeneric(codeType.FullName));
 			}
-			
+
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
 				// Checks if type has already been added.
 				if (!Interfaces.Any(it => it.FullName == codeType.FullName)) Interfaces.Add(codeType);
 			}
-			
+
 			return mType;
 		}
 
 		// Returns the generic type.
-		public EnvDTE.CodeType GetGeneric(String genericType) {
+		public EnvDTE.CodeType GetGeneric(string genericType)
+		{
 			int startIndex = genericType.IndexOf('<');
 			int endIndex = genericType.LastIndexOf('>');
 
@@ -127,24 +102,25 @@
 
 			return codeType;
 		}
-		
+
 		// Builds handlers.
 		private Handler[] BuildHandlers()
 		{
 			List<Handler> handlers = new List<Handler>();
 
-			foreach (EnvDTE.Project prj in Dte.Solution.Projects) {
+			foreach (EnvDTE.Project prj in Dte.Solution.Projects)
+			{
 				if (prj.CodeModel == null) continue;
 				CurrentProject = prj;
-			
-				foreach(EnvDTE.CodeNamespace element in prj.CodeModel.CodeElements)
+
+				foreach (EnvDTE.CodeNamespace element in prj.CodeModel.CodeElements)
 				{
 					if (element.Name == "System") continue;
 					if (element.Name == "Owin") continue;
 					if (element.Name == "Newtonsoft") continue;
 					if (element.Name == "MS") continue;
 					if (element.Name == "Microsoft") continue;
-			
+
 					// Builds servers.
 					handlers.AddRange(FindHandlers(element).Select(c => BuildHandler(c)));
 				}
@@ -154,10 +130,11 @@
 		}
 
 		// Finds handler classes.
-		public List<EnvDTE.CodeClass> FindHandlers(EnvDTE.CodeNamespace container) {
+		public List<EnvDTE.CodeClass> FindHandlers(EnvDTE.CodeNamespace container)
+		{
 			List<EnvDTE.CodeClass> handlers = new List<EnvDTE.CodeClass>();
 
-			foreach(EnvDTE.CodeElement element in container.Members)
+			foreach (EnvDTE.CodeElement element in container.Members)
 			{
 				if (element.Kind == EnvDTE.vsCMElement.vsCMElementClass)
 				{
@@ -180,7 +157,8 @@
 			foreach (EnvDTE.CodeAttribute attr in codeClass.Attributes) if (attr.FullName == "TypedRpc.TypedRpcHandler") return true;
 
 			// Checks if any parent is handler.
-			foreach (EnvDTE.CodeClass parentClass in codeClass.Bases) {
+			foreach (EnvDTE.CodeClass parentClass in codeClass.Bases)
+			{
 				if (IsHandler(parentClass)) return true;
 			}
 
@@ -202,7 +180,8 @@
 		}
 
 		// Builds methods.
-		public Method[] BuildMethods(EnvDTE.CodeClass codeClass) {
+		public Method[] BuildMethods(EnvDTE.CodeClass codeClass)
+		{
 			List<Method> methods = new List<Method>();
 
 			if (IsHandler(codeClass))
@@ -243,10 +222,12 @@
 		}
 
 		// Builds parameters.
-		public Parameter[] BuildParameters(EnvDTE.CodeFunction codeFunction) {
+		public Parameter[] BuildParameters(EnvDTE.CodeFunction codeFunction)
+		{
 			List<Parameter> parameters = new List<Parameter>();
 
-			foreach (EnvDTE80.CodeParameter2 parameter in codeFunction.Parameters) {
+			foreach (EnvDTE80.CodeParameter2 parameter in codeFunction.Parameters)
+			{
 				if (parameter.Type.CodeType.FullName == "Microsoft.Owin.IOwinContext") continue;
 
 				parameters.Add(BuildParameter(parameter));
@@ -285,7 +266,8 @@
 			while (index < Interfaces.Count)
 			{
 				// Builds the interface.
-				switch (Interfaces[index].Kind) {
+				switch (Interfaces[index].Kind)
+				{
 					case EnvDTE.vsCMElement.vsCMElementClass: interfaces.Add(BuildInterface((EnvDTE.CodeClass)Interfaces[index])); break;
 					case EnvDTE.vsCMElement.vsCMElementEnum: enums.Add(BuildEnum((EnvDTE.CodeEnum)Interfaces[index])); break;
 				}
@@ -296,7 +278,7 @@
 
 			// All interfaces generated.
 			Interfaces.Clear();
-			
+
 			model.Interfaces = interfaces.ToArray();
 			model.Enums = enums.ToArray();
 		}
@@ -311,15 +293,17 @@
 				Name = codeEnum.Name,
 				Values = enumValues
 			};
-			
+
 			return aEnum;
 		}
 
 		// Builds enum values.
-		private EnumValue[] BuildEnumValues(EnvDTE.CodeEnum codeEnum) {
+		private EnumValue[] BuildEnumValues(EnvDTE.CodeEnum codeEnum)
+		{
 			List<EnumValue> enumValues = new List<EnumValue>();
 
-			foreach (EnvDTE.CodeVariable codeVariable in codeEnum.Members) {
+			foreach (EnvDTE.CodeVariable codeVariable in codeEnum.Members)
+			{
 				enumValues.Add(BuildEnumValue(codeVariable));
 			}
 
@@ -348,15 +332,17 @@
 				Name = codeClass.Name,
 				Properties = properties
 			};
-			
+
 			return theInterface;
 		}
 
 		// Builds properties.
-		public Property[] BuildProperties(EnvDTE.CodeClass codeClass) {
+		public Property[] BuildProperties(EnvDTE.CodeClass codeClass)
+		{
 			List<Property> properties = new List<Property>();
 
-			foreach (EnvDTE.CodeElement codeElement in codeClass.Members) {
+			foreach (EnvDTE.CodeElement codeElement in codeClass.Members)
+			{
 				if (codeElement.Kind != EnvDTE.vsCMElement.vsCMElementProperty) continue;
 
 				properties.Add(BuildProperty((EnvDTE.CodeProperty)codeElement));
@@ -377,6 +363,4 @@
 			return property;
 		}
 	}
-
-\#>
-
+}

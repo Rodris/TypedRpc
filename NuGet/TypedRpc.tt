@@ -1,5 +1,12 @@
 ﻿<#@ template debug="true" hostspecific="true" language="C#" #>
 <#@ output extension=".ts" #>
+<#@ include file="TypedRpcAssembly.t4" once="true" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="EnvDTE80" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="TypedRpc.Client" #>
 <#
 	// Initializations
 	IServiceProvider serviceProvider = (IServiceProvider)this.Host;
@@ -11,4 +18,3 @@
 	string client = new ClientTS().BuildClient(model);
 	WriteLine(client);
 #>
-<#@ include file="ModelBuilderDesign.t4" once="true" #>  
