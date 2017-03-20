@@ -41,6 +41,32 @@ namespace TypedRpc.Client
 			return model;
 		}
 
+		// Returns a type from its name.
+		private EnvDTE.CodeType GetCodeType(string name)
+		{
+			// Declarations
+			EnvDTE.CodeType codeType;
+
+			// Tries current project.
+			codeType = CurrentProject.CodeModel.CodeTypeFromFullName(name);
+
+			// Validates code type.
+			if (codeType == null)
+			{
+				// Searches in all available projects.
+				foreach (EnvDTE.Project project in Dte.Solution.Projects)
+				{
+					// Tries the project.
+					codeType = project.CodeModel.CodeTypeFromFullName(name);
+
+					// Found it?
+					if (codeType != null) break;
+				}
+			}
+
+			return codeType;
+		}
+
 		// Builds a model type.
 		private MType BuildMType(EnvDTE.CodeType codeType)
 		{
@@ -70,7 +96,7 @@ namespace TypedRpc.Client
 			{
 				// Adds its type.
 				string codeTypeName = codeType.FullName.Substring(0, codeType.FullName.Length - 2);
-				mType.GenericType = BuildMType(CurrentProject.CodeModel.CodeTypeFromFullName(codeTypeName));
+				mType.GenericType = BuildMType(GetCodeType(codeTypeName));
 			}
 
 			// If List or Task.
@@ -82,8 +108,12 @@ namespace TypedRpc.Client
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
-				// Checks if type has already been added.
-				if (!Interfaces.Any(it => it.FullName == codeType.FullName)) Interfaces.Add(codeType);
+				// Checks if type has not been added.
+				if (!Interfaces.Any(it => it.FullName == codeType.FullName))
+				{
+					// Adds interface.
+					Interfaces.Add(codeType);
+				}
 			}
 
 			return mType;
@@ -98,7 +128,7 @@ namespace TypedRpc.Client
 			if (startIndex < 0) return null;
 
 			genericType = genericType.Substring(startIndex + 1, (endIndex - startIndex - 1));
-			EnvDTE.CodeType codeType = CurrentProject.CodeModel.CodeTypeFromFullName(genericType);
+			EnvDTE.CodeType codeType = GetCodeType(genericType);
 
 			return codeType;
 		}
