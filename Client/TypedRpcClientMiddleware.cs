@@ -16,9 +16,6 @@ namespace TypedRpc.Client
 		// Default instructions.
 		private static string DEFAULT_INSTRUCTIONS = CreateDefaultInstructions();
 
-		// Client mode.
-		private static Model Model = new ModelBuilderRuntime().BuildModel();
-
 		// Finds all client builders in project.
 		private static IClientBuilder[] FindClientBuilders()
 		{
@@ -75,6 +72,7 @@ namespace TypedRpc.Client
         {
 			// Declarations
 			IClientBuilder builder;
+			Model model;
 			string type;
 			string result;
 
@@ -92,7 +90,14 @@ namespace TypedRpc.Client
 
 				// Validates builder.
 				builder = ClientBuilders.FirstOrDefault(cb => cb.Type == type);
-				if (builder != null) result = builder.BuildClient(Model);
+				if (builder != null)
+				{
+					// Builds model.
+					model = new ModelBuilderRuntime().BuildModel();
+
+					// Builds client.
+					result = builder.BuildClient(model);
+				}
 			}
 
 			// Sends result.
