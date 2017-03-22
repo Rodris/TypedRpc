@@ -111,7 +111,7 @@ namespace TypedRpc
 			catch (Exception exception)
 			{
 				// Triggers exception event.
-				if (Options != null && Options.OnCatch != null) Options.OnCatch(data, context, exception);
+				if (Options != null && Options.OnCatch != null) Options.OnCatch(data, jRequest, context, exception);
 
 				// Handles error.
 				return MountError(jRequest.Id, JsonError.ERROR_INTERNAL);

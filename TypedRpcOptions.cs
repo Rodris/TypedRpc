@@ -12,6 +12,6 @@ namespace TypedRpc
 		/// <summary>
 		/// Catches internal exceptions in TypedRpc.
 		/// </summary>
-		public Action<string, IOwinContext, Exception> OnCatch { get; set; }
+		public Action<string, JsonRequest, IOwinContext, Exception> OnCatch { get; set; }
 	}
 }
