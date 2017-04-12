@@ -9,6 +9,9 @@ namespace TypedRpc.Client
 	// Creates the client model in runtime.
 	public class ModelBuilderRuntime : IModelBuilder
 	{
+		// Model under construction.
+		private Model Model;
+
 		// Found interfaces.
 		private List<Type> InterfacesTypes = new List<Type>();
 
@@ -16,11 +19,11 @@ namespace TypedRpc.Client
 		public Model BuildModel()
 		{
 			// Builds model.
-			Model model = new Model();
-			model.Handlers = TypedRpcHandler.Handlers.Select(h => BuildHandler(h.GetType())).ToArray();
-			BuildInterfaces(model);
+			Model = new Model();
+			Model.Handlers = TypedRpcHandler.Handlers.Select(h => BuildHandler(h.GetType())).ToArray();
+			BuildInterfaces(Model);
 
-			return model;
+			return Model;
 		}
 
 		// Builds a model type.
@@ -41,26 +44,34 @@ namespace TypedRpc.Client
 			else if (type.FullName.StartsWith("System.Collections.Generic.Dictionary")) mType.Type = MType.MTType.Dictionary;
 			else if (type.FullName.StartsWith("Microsoft.Owin.IOwinContext")) mType.Type = MType.MTType.OwinContext;
 			else if (type.FullName.StartsWith("System")) mType.Type = MType.MTType.System;
+			else if (type.FullName == ("JsonRpc.JsonError")) mType.Type = MType.MTType.Ignore;
 			else mType.Type = MType.MTType.Custom;
 
 			// If array.
 			if (mType.Type == MType.MTType.Array)
 			{
 				// Adds its type.
-				mType.GenericType = BuildMType(type.GetElementType());
+				mType.GenericTypes = new MType[] { BuildMType(type.GetElementType()) };
 			}
 
 			// If List or Task.
 			if (mType.Type == MType.MTType.List || mType.Type == MType.MTType.Task)
 			{
-				if (type.GenericTypeArguments.Any()) mType.GenericType = BuildMType(type.GenericTypeArguments[0]);
+				if (type.GenericTypeArguments.Any()) mType.GenericTypes = new MType[] { BuildMType(type.GenericTypeArguments[0]) };
 			}
 
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
 				// Checks if type has already been added.
-				if (!InterfacesTypes.Any(it => it.FullName == type.FullName)) InterfacesTypes.Add(type);
+				if (!InterfacesTypes.Any(it => it.FullName == type.FullName))
+				{
+					// Adds interface.
+					InterfacesTypes.Add(type);
+
+					// Finds its generics.
+					mType.GenericTypes = type.GenericTypeArguments.Select(t => BuildMType(t)).ToArray();
+				}
 			}
 
 			return mType;

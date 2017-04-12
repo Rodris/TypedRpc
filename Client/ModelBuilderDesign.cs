@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TypedRpc.Client
 {
@@ -12,6 +13,9 @@ namespace TypedRpc.Client
 
 		// Current project.
 		private EnvDTE.Project CurrentProject;
+
+		// Model under construction.
+		private Model Model;
 
 		// Found interfaces.
 		private List<EnvDTE.CodeType> Interfaces = new List<EnvDTE.CodeType>();
@@ -34,11 +38,11 @@ namespace TypedRpc.Client
 		// Builds model.
 		public Model BuildModel()
 		{
-			Model model = new Model();
-			model.Handlers = BuildHandlers();
-			BuildInterfaces(model);
+			Model = new Model();
+			Model.Handlers = BuildHandlers();
+			BuildInterfaces(Model);
 
-			return model;
+			return Model;
 		}
 
 		// Returns a type from its name.
@@ -68,6 +72,29 @@ namespace TypedRpc.Client
 		}
 
 		// Builds a model type.
+		private MType BuildMTypeRef(EnvDTE.CodeTypeRef codeTypeRef)
+		{
+			// Declarations
+			MType mType;
+
+			// Checks if property is generic.
+			if (codeTypeRef.TypeKind == EnvDTE.vsCMTypeRef.vsCMTypeRefOther)
+			{
+				// Builds generic type.
+				mType = new MType();
+				mType.Name = codeTypeRef.AsString;
+				mType.FullName = codeTypeRef.AsFullName;
+				mType.Type = MType.MTType.Generic;
+			}
+			else
+			{
+				mType = BuildMType(codeTypeRef.CodeType);
+			}
+
+			return mType;
+		}
+
+		// Builds a model type.
 		private MType BuildMType(EnvDTE.CodeType codeType)
 		{
 			// Declarations
@@ -89,6 +116,7 @@ namespace TypedRpc.Client
 			else if (codeType.FullName.StartsWith("System.Collections.Generic.Dictionary")) mType.Type = MType.MTType.Dictionary;
 			else if (codeType.FullName.StartsWith("Microsoft.Owin.IOwinContext")) mType.Type = MType.MTType.OwinContext;
 			else if (codeType.FullName.StartsWith("System")) mType.Type = MType.MTType.System;
+			else if (codeType.FullName == ("JsonRpc.JsonError")) mType.Type = MType.MTType.Ignore;
 			else mType.Type = MType.MTType.Custom;
 
 			// If array.
@@ -96,20 +124,23 @@ namespace TypedRpc.Client
 			{
 				// Adds its type.
 				string codeTypeName = codeType.FullName.Substring(0, codeType.FullName.Length - 2);
-				mType.GenericType = BuildMType(GetCodeType(codeTypeName));
+				mType.GenericTypes = new MType[] { BuildMType(GetCodeType(codeTypeName)) };
 			}
 
 			// If List or Task.
 			if (mType.Type == MType.MTType.List || mType.Type == MType.MTType.Task)
 			{
-				mType.GenericType = BuildMType(GetGeneric(codeType.FullName));
+				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ct => BuildMType(ct)).ToArray();
 			}
 
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
+				// Finds its generics.
+				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ct => BuildMType(ct)).ToArray();
+				
 				// Checks if type has not been added.
-				if (!Interfaces.Any(it => it.FullName == codeType.FullName))
+				if (!Interfaces.Any(it => it.Name == codeType.Name))
 				{
 					// Adds interface.
 					Interfaces.Add(codeType);
@@ -119,18 +150,23 @@ namespace TypedRpc.Client
 			return mType;
 		}
 
-		// Returns the generic type.
-		public EnvDTE.CodeType GetGeneric(string genericType)
+		// Returns the generic types.
+		public EnvDTE.CodeType[] GetGenerics(string genericTypes)
 		{
-			int startIndex = genericType.IndexOf('<');
-			int endIndex = genericType.LastIndexOf('>');
+			// Declarations
+			EnvDTE.CodeType[] codeTypes;
+			int startIndex;
+			int endIndex;
 
-			if (startIndex < 0) return null;
+			startIndex = genericTypes.IndexOf('<');
+			endIndex = genericTypes.LastIndexOf('>');
 
-			genericType = genericType.Substring(startIndex + 1, (endIndex - startIndex - 1));
-			EnvDTE.CodeType codeType = GetCodeType(genericType);
+			if (startIndex < 0) return new EnvDTE.CodeType[0];
 
-			return codeType;
+			genericTypes = genericTypes.Substring(startIndex + 1, (endIndex - startIndex - 1));
+			codeTypes = genericTypes.Split(',').Select(gt => GetCodeType(gt)).ToArray();
+
+			return codeTypes;
 		}
 
 		// Builds handlers.
@@ -355,7 +391,21 @@ namespace TypedRpc.Client
 		// Builds an interface.
 		private Interface BuildInterface(EnvDTE.CodeClass codeClass)
 		{
-			Property[] properties = BuildProperties(codeClass);
+			Property[] properties;
+			EnvDTE.CodeType[] generics;
+			string genericsParams;
+			
+			// Checks if type has generics.
+			generics = GetGenerics(codeClass.FullName);
+			if (generics.Length > 0)
+			{
+				// Retrieves its generic code.
+				genericsParams = string.Format("<{0}>", string.Join(", ", generics.Select((mt, index) => "T" + index)));
+				codeClass = (EnvDTE.CodeClass)CurrentProject.CodeModel.CodeTypeFromFullName(Regex.Replace(codeClass.FullName, "<.*>", genericsParams));
+			}
+
+			// Builds properties.
+			properties = BuildProperties(codeClass);
 
 			Interface theInterface = new Interface
 			{
@@ -387,7 +437,7 @@ namespace TypedRpc.Client
 			Property property = new Property()
 			{
 				Name = codeProperty.Name,
-				Type = BuildMType(codeProperty.Type.CodeType)
+				Type = BuildMTypeRef(codeProperty.Type)
 			};
 
 			return property;

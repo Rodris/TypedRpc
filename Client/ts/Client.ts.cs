@@ -68,6 +68,10 @@ namespace TypedRpc {{
 			// Builds client;
 			string client = string.Format(TEMPLATE_TS, remoteMethod, handlers, enums, interfaces);
 
+#if DEBUG
+			client += string.Join("\r\n", model.Debug);
+#endif
+
 			return client;
 		}
 
@@ -114,12 +118,20 @@ namespace TypedRpc {{
 			// Checks type type.
 			switch (mType.Type) {
 				case MType.MTType.Array:
-				case MType.MTType.List: name = GetNameType(mType.GenericType) + "[]"; break;
+				case MType.MTType.List: name = GetNameType(mType.GenericTypes[0]) + "[]"; break;
 				case MType.MTType.Dictionary: name = "any"; break;
-				case MType.MTType.Task: name = (mType.GenericType == null) ? "void" : GetNameType(mType.GenericType); break;
-
+				case MType.MTType.Task: name = mType.GenericTypes.Any() ? GetNameType(mType.GenericTypes[0]) : "void"; break;
+				
 				// Custom class.
-				default: name = mType.Name; break;
+				default:
+					name = string.Empty;
+					if (mType.GenericTypes.Length > 0)
+					{
+						name = string.Join(", ", mType.GenericTypes.Select(gt => GetNameType(gt)));
+						name = string.Format("<{0}>", name);
+					}
+					name = mType.Name + name;
+					break;
 			}
 			return name;
 		}
@@ -174,8 +186,15 @@ namespace TypedRpc {{
 		// Builds an interface.
 		private string BuildInterface(Interface theInterface)
 		{
+			// Declarations
+			string generics;
+
+			generics = string.Join(", ", theInterface.Properties.Where(p => p.Type.Type == MType.MTType.Generic).Select((p, index) => "T" + index));
+			if (!string.IsNullOrEmpty(generics)) generics = string.Format("<{0}>", generics);
+
 			string properties = string.Join("\r\n", theInterface.Properties.Select(p => BuildProperty(p)));
-			return string.Format(TEMPLATE_INTERFACE, theInterface.Name, string.Join("\r\n", properties));
+
+			return string.Format(TEMPLATE_INTERFACE, theInterface.Name + generics, string.Join("\r\n", properties));
 		}
 
 		// Builds a property.

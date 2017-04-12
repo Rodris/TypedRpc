@@ -1,4 +1,6 @@
-﻿namespace TypedRpc.Client
+﻿using System.Collections.Generic;
+
+namespace TypedRpc.Client
 {
 	// Interface to build client code.
 	public interface IClientBuilder
@@ -25,6 +27,10 @@
 		public Handler[] Handlers { get; set; }
 		public Interface[] Interfaces { get; set; }
 		public AEnum[] Enums { get; set; }
+
+#if DEBUG
+		public List<string> Debug = new List<string>();
+#endif
 	}
 
 	// Class that represents a TypedRpcHandler.
@@ -84,18 +90,27 @@
 		// Model Type types.
 		public enum MTType
 		{
+			Ignore,
 			Custom,
 			OwinContext,
 			System,
 			Array,
 			List,
 			Dictionary,
-			Task
+			Task,
+			Generic
 		}
 
 		public string Name { get; set; }
 		public string FullName { get; set; }
 		public MTType Type { get; set; }
-		public MType GenericType { get; set; }
+		public MType[] GenericTypes { get; set; }
+
+		// Constructor
+		public MType()
+		{
+			// Initializations
+			GenericTypes = new MType[0];
+		}
 	}
 }
