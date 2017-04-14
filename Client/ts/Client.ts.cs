@@ -189,7 +189,7 @@ namespace TypedRpc {{
 			// Declarations
 			string generics;
 
-			generics = string.Join(", ", theInterface.Properties.Where(p => p.Type.Type == MType.MTType.Generic).Select((p, index) => "T" + index));
+			generics = string.Join(", ", theInterface.Properties.Where(p => p.Type.Type == MType.MTType.Generic).Select(p => p.Type.Name));
 			if (!string.IsNullOrEmpty(generics)) generics = string.Format("<{0}>", generics);
 
 			string properties = string.Join("\r\n", theInterface.Properties.Select(p => BuildProperty(p)));

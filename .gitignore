@@ -2,4 +2,4 @@ bin/
 obj/
 NuGet/TypedRpc.ts
 NuGet/packages
-/NuGet/ModelBuilderDesign.t4
+*.t4

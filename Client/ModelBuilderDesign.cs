@@ -44,31 +44,34 @@ namespace TypedRpc.Client
 
 			return Model;
 		}
-
+		
 		// Returns a type from its name.
-		private EnvDTE.CodeType GetCodeType(string name)
+		private EnvDTE.CodeTypeRef GetCodeTypeRef(string name)
 		{
 			// Declarations
-			EnvDTE.CodeType codeType;
+			EnvDTE.CodeTypeRef codeTypeRef;
 
 			// Tries current project.
-			codeType = CurrentProject.CodeModel.CodeTypeFromFullName(name);
+			codeTypeRef = CurrentProject.CodeModel.CreateCodeTypeRef(name);
 
 			// Validates code type.
-			if (codeType == null)
+			if (codeTypeRef == null)
 			{
 				// Searches in all available projects.
 				foreach (EnvDTE.Project project in Dte.Solution.Projects)
 				{
+					// Validates code model.
+					if (project.CodeModel == null) continue;
+
 					// Tries the project.
-					codeType = project.CodeModel.CodeTypeFromFullName(name);
+					codeTypeRef = project.CodeModel.CreateCodeTypeRef(name);
 
 					// Found it?
-					if (codeType != null) break;
+					if (codeTypeRef != null) break;
 				}
 			}
 
-			return codeType;
+			return codeTypeRef;
 		}
 
 		// Builds a model type.
@@ -124,20 +127,20 @@ namespace TypedRpc.Client
 			{
 				// Adds its type.
 				string codeTypeName = codeType.FullName.Substring(0, codeType.FullName.Length - 2);
-				mType.GenericTypes = new MType[] { BuildMType(GetCodeType(codeTypeName)) };
+				mType.GenericTypes = new MType[] { BuildMTypeRef(GetCodeTypeRef(codeTypeName)) };
 			}
 
 			// If List or Task.
 			if (mType.Type == MType.MTType.List || mType.Type == MType.MTType.Task)
 			{
-				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ct => BuildMType(ct)).ToArray();
+				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ctr => BuildMTypeRef(ctr)).ToArray();
 			}
 
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
 				// Finds its generics.
-				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ct => BuildMType(ct)).ToArray();
+				mType.GenericTypes = GetGenerics(codeType.FullName).Select(ctr => BuildMTypeRef(ctr)).ToArray();
 				
 				// Checks if type has not been added.
 				if (!Interfaces.Any(it => it.Name == codeType.Name))
@@ -151,20 +154,20 @@ namespace TypedRpc.Client
 		}
 
 		// Returns the generic types.
-		public EnvDTE.CodeType[] GetGenerics(string genericTypes)
+		public EnvDTE.CodeTypeRef[] GetGenerics(string genericTypes)
 		{
 			// Declarations
-			EnvDTE.CodeType[] codeTypes;
+			EnvDTE.CodeTypeRef[] codeTypes;
 			int startIndex;
 			int endIndex;
 
 			startIndex = genericTypes.IndexOf('<');
 			endIndex = genericTypes.LastIndexOf('>');
 
-			if (startIndex < 0) return new EnvDTE.CodeType[0];
+			if (startIndex < 0) return new EnvDTE.CodeTypeRef[0];
 
 			genericTypes = genericTypes.Substring(startIndex + 1, (endIndex - startIndex - 1));
-			codeTypes = genericTypes.Split(',').Select(gt => GetCodeType(gt)).ToArray();
+			codeTypes = genericTypes.Split(',').Select(gt => GetCodeTypeRef(gt)).ToArray();
 
 			return codeTypes;
 		}
@@ -392,7 +395,7 @@ namespace TypedRpc.Client
 		private Interface BuildInterface(EnvDTE.CodeClass codeClass)
 		{
 			Property[] properties;
-			EnvDTE.CodeType[] generics;
+			EnvDTE.CodeTypeRef[] generics;
 			string genericsParams;
 			
 			// Checks if type has generics.
@@ -401,7 +404,7 @@ namespace TypedRpc.Client
 			{
 				// Retrieves its generic code.
 				genericsParams = string.Format("<{0}>", string.Join(", ", generics.Select((mt, index) => "T" + index)));
-				codeClass = (EnvDTE.CodeClass)CurrentProject.CodeModel.CodeTypeFromFullName(Regex.Replace(codeClass.FullName, "<.*>", genericsParams));
+				codeClass = (EnvDTE.CodeClass)GetCodeTypeRef(Regex.Replace(codeClass.FullName, "<.*>", genericsParams)).CodeType;
 			}
 
 			// Builds properties.

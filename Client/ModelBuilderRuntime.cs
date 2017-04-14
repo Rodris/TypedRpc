@@ -34,17 +34,19 @@ namespace TypedRpc.Client
 
 			// New type.
 			mType = new MType();
-			mType.Name = type.Name;
-			mType.FullName = type.FullName;
+			mType.Name = type.Name.Split('`').First();
+			mType.FullName = type.FullName ?? type.Name;
+			mType.FullName = mType.FullName.Split('`').First();
 
 			// Checks type type.
 			if (type.IsArray) mType.Type = MType.MTType.Array;
-			else if (type.FullName.StartsWith("System.Collections.Generic.List")) mType.Type = MType.MTType.List;
-			else if (type.FullName.StartsWith("System.Threading.Tasks.Task")) mType.Type = MType.MTType.Task;
-			else if (type.FullName.StartsWith("System.Collections.Generic.Dictionary")) mType.Type = MType.MTType.Dictionary;
-			else if (type.FullName.StartsWith("Microsoft.Owin.IOwinContext")) mType.Type = MType.MTType.OwinContext;
-			else if (type.FullName.StartsWith("System")) mType.Type = MType.MTType.System;
-			else if (type.FullName == ("JsonRpc.JsonError")) mType.Type = MType.MTType.Ignore;
+			else if (mType.FullName.StartsWith("System.Collections.Generic.List")) mType.Type = MType.MTType.List;
+			else if (mType.FullName.StartsWith("System.Threading.Tasks.Task")) mType.Type = MType.MTType.Task;
+			else if (mType.FullName.StartsWith("System.Collections.Generic.Dictionary")) mType.Type = MType.MTType.Dictionary;
+			else if (mType.FullName.StartsWith("Microsoft.Owin.IOwinContext")) mType.Type = MType.MTType.OwinContext;
+			else if (mType.FullName.StartsWith("System")) mType.Type = MType.MTType.System;
+			else if (mType.FullName == ("JsonRpc.JsonError")) mType.Type = MType.MTType.Ignore;
+			else if (type.IsGenericParameter) mType.Type = MType.MTType.Generic;
 			else mType.Type = MType.MTType.Custom;
 
 			// If array.
@@ -63,14 +65,14 @@ namespace TypedRpc.Client
 			// If custom.
 			if (mType.Type == MType.MTType.Custom)
 			{
+				// Finds its generics.
+				mType.GenericTypes = type.GenericTypeArguments.Select(t => BuildMType(t)).ToArray();
+
 				// Checks if type has already been added.
-				if (!InterfacesTypes.Any(it => it.FullName == type.FullName))
+				if (!InterfacesTypes.Any(it => it.Name == type.Name))
 				{
 					// Adds interface.
 					InterfacesTypes.Add(type);
-
-					// Finds its generics.
-					mType.GenericTypes = type.GenericTypeArguments.Select(t => BuildMType(t)).ToArray();
 				}
 			}
 
@@ -88,7 +90,7 @@ namespace TypedRpc.Client
 		{
 			Handler handler = new Handler()
 			{
-				Name = type.Name,
+				Name = type.Name.Split('`').First(),
 				Methods = type.GetMethods().Where(m => IsHandler(m.DeclaringType)).Select(m => BuildMethod(m)).ToArray()
 			};
 
@@ -105,7 +107,7 @@ namespace TypedRpc.Client
 			
 			Method method = new Method()
 			{
-				Name = methodInfo.Name,
+				Name = methodInfo.Name.Split('`').First(),
 				ReturnType = BuildMType(methodInfo.ReturnType),
 				Parameters = parameters
 			};
@@ -193,12 +195,15 @@ namespace TypedRpc.Client
 		}
 
 		// Builds an interface.
-		private Interface BuildInterface(Type mType)
+		private Interface BuildInterface(Type type)
 		{
+			// Checks if type has generics.
+			if (type.IsGenericType) type = type.GetGenericTypeDefinition();
+
 			Interface theInterface = new Interface
 			{
-				Name = mType.Name,
-				Properties = mType.GetProperties().Select(p => BuildProperty(p)).ToArray()
+				Name = type.Name.Split('`').First(),
+				Properties = type.GetProperties().Select(p => BuildProperty(p)).ToArray()
 			};
 			
 			return theInterface;
