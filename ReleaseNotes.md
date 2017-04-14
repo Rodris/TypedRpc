@@ -1,4 +1,6 @@
 ﻿# 1.4.0
+- Returns custom errors.
+- Accepts generic interfaces.
 - Generates enum types.
 - Generates nullable properties of interfaces.
 

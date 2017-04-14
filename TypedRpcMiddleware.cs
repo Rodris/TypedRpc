@@ -102,14 +102,38 @@ namespace TypedRpc
 				jResponse = new JsonResponse();
 				jResponse.Id = jRequest.Id;
 
-				// Checks if result is error.
-				if (result is JsonError) jResponse.Error = (JsonError)result;
+				// Checks if is a wrapped result.
+				if (result.GetType().GetGenericTypeDefinition() == typeof(TypedRpcReturn<>))
+				{
+					// Checks if result is error.
+					jResponse.Error = result.GetType().GetProperty("Error").GetValue(result) as JsonError;
+					if (jResponse.Error == null)
+					{
+						// Retrieves result value.
+						jResponse.Result = result.GetType().GetProperty("Data").GetValue(result);
+					}
+				}
 				else jResponse.Result = result;
 
 				return jResponse;
 			}
 			catch (Exception exception)
 			{
+				// Declarations
+				TypedRpcException typedRpcException;
+
+				// Looks for a TypedRpcExceptions.
+				typedRpcException = TypedRpcException.FindInChain(exception);
+				if (typedRpcException != null)
+				{
+					// Returns custom error.
+					return new JsonResponse()
+					{
+						Id = jRequest.Id,
+						Error = typedRpcException.Error
+					};
+				}
+
 				// Triggers exception event.
 				if (Options != null && Options.OnCatch != null) Options.OnCatch(data, jRequest, context, exception);
 
@@ -118,8 +142,8 @@ namespace TypedRpc
 			}
         }
 
-        // Invokes a method.
-        protected virtual object InvokeMethod(object handler, MethodInfo methodInfo, object[] parameters)
+		// Invokes a method.
+		protected virtual object InvokeMethod(object handler, MethodInfo methodInfo, object[] parameters)
         {
             // Invokes method directly.
             return methodInfo.Invoke(handler, parameters);

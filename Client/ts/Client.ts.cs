@@ -136,6 +136,32 @@ namespace TypedRpc {{
 			return name;
 		}
 
+		// Returns the return type of a method.
+		private string GetNameReturn(MType mType)
+		{
+			// Checks if is a task.
+			if (mType.Type == MType.MTType.Task)
+			{
+				// Checks if there is no return.
+				if (!mType.GenericTypes.Any()) return "void";
+
+				// Extracts task return.
+				mType = mType.GenericTypes.First();
+			}
+
+			// Checks if is a wrapped type.
+			if (mType.Name == "TypedRpcReturn")
+			{
+				// Returns the wrapped type.
+				return GetNameType(mType.GenericTypes.First());
+			}
+			else
+			{
+				// Returns the original type.
+				return GetNameType(mType);
+			}
+		}
+
 		// Builds a handler.
 		private string BuildHandler(Handler handler)
 		{
@@ -165,7 +191,7 @@ namespace TypedRpc {{
 		private string BuildMethod(Handler handler, Method method)
 		{
 			string parameters = string.Join(", ", method.Parameters.Select(p => BuildParameter(p)));
-			string returnType = GetNameType(method.ReturnType);
+			string returnType = GetNameReturn(method.ReturnType);
 			string templateMethod = (returnType == "void") ? TEMPLATE_METHOD_ACTION : TEMPLATE_METHOD_FUNC;
 
 			string methodText = string.Format(templateMethod,
