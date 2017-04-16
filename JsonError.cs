@@ -33,9 +33,16 @@ namespace JsonRpc
 		[DataMember(Name = "data")]
 		public object Data { get; set; }
 
-		// Implicit constructor.
-		public static implicit operator JsonError(int code) {
+		// Implicit constructor for code.
+		public static implicit operator JsonError(int code)
+		{
 			return new JsonError() { Code = code };
+		}
+
+		// Implicit constructor for message.
+		public static implicit operator JsonError(string message)
+		{
+			return new JsonError() { Message = message };
 		}
 	}
 

@@ -103,7 +103,7 @@ namespace TypedRpc
 				jResponse.Id = jRequest.Id;
 
 				// Checks if is a wrapped result.
-				if (result.GetType().GetGenericTypeDefinition() == typeof(TypedRpcReturn<>))
+				if (result.GetType().IsGenericType && result.GetType().GetGenericTypeDefinition() == typeof(TypedRpcReturn<>))
 				{
 					// Checks if result is error.
 					jResponse.Error = result.GetType().GetProperty("Error").GetValue(result) as JsonError;

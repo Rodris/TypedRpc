@@ -1,4 +1,7 @@
-﻿# 1.4.0
+﻿# 1.4.1
+- Fixed non generic handler bug.
+
+# 1.4.0
 - Returns custom errors.
 - Accepts generic interfaces.
 - Generates enum types.

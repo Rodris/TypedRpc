@@ -10,6 +10,12 @@ namespace TypedRpc
 		public JsonError Error { get; private set; }
 
 		// Constructor
+		public TypedRpcException(string message, string data = null) : this(0, message, data)
+		{
+
+		}
+
+		// Constructor
 		public TypedRpcException(int code, string message, string data = null) : base(message)
 		{
 			// Initialization
