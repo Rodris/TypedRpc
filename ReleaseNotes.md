@@ -1,4 +1,7 @@
-﻿# 1.4.1
+﻿# 1.4.2
+- Fixed handler action methods bug.
+
+# 1.4.1
 - Fixed non generic handler bug.
 
 # 1.4.0
