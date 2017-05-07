@@ -433,7 +433,7 @@ namespace TypedRpc.Client
 			{
 				// Retrieves its generic code.
 				genericsParams = string.Format("<{0}>", string.Join(", ", generics.Select((mt, index) => "T" + index)));
-				codeClass = (EnvDTE.CodeClass)GetCodeTypeRef(Regex.Replace(codeClass.FullName, "<.*>", genericsParams));
+				codeClass = (EnvDTE.CodeClass)GetCodeType(Regex.Replace(codeClass.FullName, "<.*>", genericsParams));
 			}
 
 			// Builds properties.
