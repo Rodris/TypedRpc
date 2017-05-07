@@ -1,4 +1,7 @@
-﻿# 1.4.2
+﻿# 1.5.0
+- Added authorization to methods calls.
+
+# 1.4.2
 - Fixed handler action methods bug.
 
 # 1.4.1

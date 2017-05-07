@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using TypedRpc.Security;
 
 namespace TypedRpc
 {
@@ -20,7 +21,7 @@ namespace TypedRpc
             : base(next)
         {
 			// Initializations
-			Options = options;
+			Options = options ?? new TypedRpcOptions();
         }
         
         // Handles requests.
@@ -42,6 +43,7 @@ namespace TypedRpc
         {
 			// Declarations
 			string data;
+			JsonError error;
             JsonRequest jRequest;
             JsonResponse jResponse;
             object handler;
@@ -51,36 +53,15 @@ namespace TypedRpc
 
 			// Initializations
 			data = null;
-            jRequest = null;
-            handler = null;
-            methodInfo = null;
-            parameters = null;
+			jRequest = null;
 
 			try
 			{
-				// Extracts data.
-				data = new StreamReader(context.Request.Body).ReadToEnd();
+				// Retrieves method.
+				error = GetMethod(context, out data, out jRequest, out handler, out methodInfo, out parameters);
 
-				// Builds request.
-				jRequest = JsonSerializer.Deserialize<JsonRequest>(data);
-
-				// Validates message.
-				if (jRequest == null) return MountError(null, JsonError.ERROR_PARSE);
-
-				// Validates request.
-				if (jRequest.Method == null) return MountError(jRequest.Id, JsonError.ERROR_INVALID_REQUEST);
-
-				// Searches and validates handle.
-				GetMethod(jRequest.Method, out handler, out methodInfo);
-
-				// Validates handler and method.
-				if (handler == null || methodInfo == null) return MountError(jRequest.Id, JsonError.ERROR_METHOD_NOT_FOUND);
-
-				// Extracts parameters.
-				if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(context, methodInfo.GetParameters(), jRequest.Params as JArray);
-
-				// Validates para meters.
-				if (parameters == null) return MountError(jRequest.Id, JsonError.ERROR_INVALID_PARAMS);
+				// Checks for any error.
+				if (error != null) return MountError(jRequest == null ? null : jRequest.Id, error);
 
 				// Invokes method.
 				result = InvokeMethod(handler, methodInfo, parameters);
@@ -123,19 +104,10 @@ namespace TypedRpc
 				TypedRpcException typedRpcException;
 
 				// Looks for a TypedRpcExceptions.
-				typedRpcException = TypedRpcException.FindInChain(exception);
-				if (typedRpcException != null)
-				{
-					// Returns custom error.
-					return new JsonResponse()
-					{
-						Id = jRequest.Id,
-						Error = typedRpcException.Error
-					};
-				}
+				if (TypedRpcException.FindInChain(exception, out typedRpcException)) return MountError(jRequest.Id, typedRpcException.Error);
 
 				// Triggers exception event.
-				if (Options != null && Options.OnCatch != null) Options.OnCatch(data, jRequest, context, exception);
+				Options.OnCatch?.Invoke(data, jRequest, context, exception);
 
 				// Handles error.
 				return MountError(jRequest.Id, JsonError.ERROR_INTERNAL);
@@ -159,26 +131,58 @@ namespace TypedRpc
             };
         }
 
-        // Retrieves a method and its handler.
-        private void GetMethod(String fullMethodName, out Object handler, out MethodInfo methodInfo)
-        {
-            // Declarations
-            String methodName;
+		private JsonError GetMethod(IOwinContext context, out string data, out JsonRequest jRequest,
+			out Object handler, out MethodInfo methodInfo, out Object[] parameters)
+		{
+			// Declarations
+			JsonError error;
+			string fullMethodName;
+			string methodName;
 
-            // Initializations
-            methodInfo = null;
+			// Initializations
+			data = null;
+			jRequest = null;
+			handler = null;
+			methodInfo = null;
+			parameters = null;
 
-            // Looks for handler in project.
-            handler = TypedRpcHandler.Handlers.FirstOrDefault(h => fullMethodName.StartsWith(h.GetType().Name));
+			// Extracts data.
+			data = new StreamReader(context.Request.Body).ReadToEnd();
 
-            // Validates handler.
-            if (handler != null)
-            {
-                // Searches method.
-                methodName = fullMethodName.Substring(handler.GetType().Name.Length + 1);
-                methodInfo = handler.GetType().GetMethod(methodName);
-            }
-        }
+			// Builds request.
+			jRequest = JsonSerializer.Deserialize<JsonRequest>(data);
+
+			// Validates message.
+			if (jRequest == null) return JsonError.ERROR_PARSE;
+
+			// Validates request.
+			if (jRequest.Method == null) return JsonError.ERROR_INVALID_REQUEST;
+
+			// Looks for handler in project.
+			fullMethodName = jRequest.Method;
+			handler = TypedRpcHandler.Handlers.FirstOrDefault(h => fullMethodName.StartsWith(h.GetType().Name));
+
+			// Validates handler.
+			if (handler == null) return JsonError.ERROR_METHOD_NOT_FOUND;
+
+			// Searches method.
+			methodName = fullMethodName.Substring(handler.GetType().Name.Length + 1);
+			methodInfo = handler.GetType().GetMethod(methodName);
+
+			// Validates method.
+			if (methodInfo == null) return JsonError.ERROR_METHOD_NOT_FOUND;
+
+			// Extracts parameters.
+			if (jRequest.Params is JArray) parameters = ExtractParametersAsArray(context, methodInfo.GetParameters(), jRequest.Params as JArray);
+
+			// Validates parameters.
+			if (parameters == null) return JsonError.ERROR_INVALID_PARAMS;
+
+			// Authorizes user.
+			if (!Authorization.Authorized(context, methodInfo, Options.DefaultAuthorizationRequired, out error)) return error;
+
+			return null;
+		}
 
         // Extracts parameters as array.
         private Object[] ExtractParametersAsArray(IOwinContext context, ParameterInfo[] paramsInfo, JArray paramsReceived)

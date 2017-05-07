@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TypedRpc.Debug</id>
-    <version>1.4.2</version>
+    <version>1.5.0</version>
     <title>TypedRpc.Debug</title>
     <authors>Rodris</authors>
     <owners>Rodris</owners>

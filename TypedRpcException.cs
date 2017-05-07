@@ -28,8 +28,11 @@ namespace TypedRpc
 		}
 
 		// Searches for a TypedRpcException in an exception chain.
-		public static TypedRpcException FindInChain(Exception exception)
+		internal static bool FindInChain(Exception exception, out TypedRpcException typedRpcException)
 		{
+			// Initializations
+			typedRpcException = null;
+
 			// Looks for TypedRpc Exceptions.
 			while (exception != null && !(exception is TypedRpcException))
 			{
@@ -37,7 +40,7 @@ namespace TypedRpc
 				exception = exception.InnerException;
 			}
 
-			return exception as TypedRpcException;
+			return (typedRpcException != null);
 		}
 	}
 

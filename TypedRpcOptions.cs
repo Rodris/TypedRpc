@@ -10,6 +10,11 @@ namespace TypedRpc
 	public class TypedRpcOptions
 	{
 		/// <summary>
+		/// Set this value to true to make all methods to require authorization by default. Default is false.
+		/// </summary>
+		public bool DefaultAuthorizationRequired = false;
+
+		/// <summary>
 		/// Catches internal exceptions in TypedRpc.
 		/// </summary>
 		public Action<string, JsonRequest, IOwinContext, Exception> OnCatch { get; set; }

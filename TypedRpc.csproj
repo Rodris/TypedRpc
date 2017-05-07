@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Security\Authorization.cs" />
     <Compile Include="Client\ModelBuilderRuntime.cs" />
     <Compile Include="Client\ts\Client.ts.cs" />
     <Compile Include="Client\Model.cs" />
