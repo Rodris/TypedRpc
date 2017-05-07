@@ -74,6 +74,35 @@ namespace TypedRpc.Client
 			return codeTypeRef;
 		}
 
+		// Returns a type from its name.
+		private EnvDTE.CodeType GetCodeType(string name)
+		{
+			// Declarations
+			EnvDTE.CodeType codeType;
+
+			// Tries current project.
+			codeType = CurrentProject.CodeModel.CodeTypeFromFullName(name);
+
+			// Validates code type.
+			if (codeType == null)
+			{
+				// Searches in all available projects.
+				foreach (EnvDTE.Project project in Dte.Solution.Projects)
+				{
+					// Validates code model.
+					if (project.CodeModel == null) continue;
+
+					// Tries the project.
+					codeType = project.CodeModel.CodeTypeFromFullName(name);
+
+					// Found it?
+					if (codeType != null) break;
+				}
+			}
+
+			return codeType;
+		}
+
 		// Builds a model type.
 		private MType BuildMTypeRef(EnvDTE.CodeTypeRef codeTypeRef)
 		{
@@ -404,7 +433,7 @@ namespace TypedRpc.Client
 			{
 				// Retrieves its generic code.
 				genericsParams = string.Format("<{0}>", string.Join(", ", generics.Select((mt, index) => "T" + index)));
-				codeClass = (EnvDTE.CodeClass)GetCodeTypeRef(Regex.Replace(codeClass.FullName, "<.*>", genericsParams)).CodeType;
+				codeClass = (EnvDTE.CodeClass)GetCodeTypeRef(Regex.Replace(codeClass.FullName, "<.*>", genericsParams));
 			}
 
 			// Builds properties.
