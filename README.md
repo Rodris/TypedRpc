@@ -54,9 +54,7 @@ public class MyHandler
 
 ### Client
 
-Create an `index.ts` file to your project and add a reference to the `Scripts/TypedRpc.ts` file to have access to the server handlers and its methods.
-
-If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
+Create an `index.ts` file to your project and add a reference to the `Scripts/TypedRpc/TypedRpc.ts` file to have access to the server handlers and their methods.
 
 ```TypeScript
 /// <reference path="Scripts/TypedRpc/TypedRpc.ts" />
@@ -78,7 +76,9 @@ rpc.GreetMe().done(callback).fail(callback);
 rpc.GreetAsync().done(callback).fail(callback);
 ```
 
-Create an `index.html` file to your project and import the `TypedRpc.js` and `index.js` file to it.
+If your TypeScript files are not finding the handlers or their methods, update the `Scripts/TypedRpc/TypedRpc.ts` file. Click on it with the right mouse button and click on 'Run Custom Tool'.
+
+Create an `index.html` file to your project and import the `TypedRpc.js` and `index.js` files to it.
 
 ```html
 <!DOCTYPE html>
